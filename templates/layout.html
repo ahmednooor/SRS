@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <!--<meta http-equiv='cache-control' content='no-cache'>
+    <meta http-equiv='expires' content='-1'>
+    <meta http-equiv='pragma' content='no-cache'>-->
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" type="text/css" href="../static/fonts/LatoLatin/latolatinfonts.css">
+    <link rel="stylesheet" type="text/css" href="../static/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="../static/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="../static/css/main.css">
+    <link rel="icon" type="image/ico" href="../static/img/system/logo.ico">
+    <script src="../static/js/jquery-3.2.1.min.js"></script>
+    <script src="../static/js/bootstrap.min.js"></script>
+    {% block script %}{% endblock %}
+</head>
+
+<body>
+
+<nav class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-2">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">
+            <i class="fa fa-graduation-cap" aria-hidden="true"></i>
+            Al Jadeed Academy
+            </a>
+        </div>
+
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-2">
+            <ul class="nav navbar-nav navbar-right">
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+                        <i class="fa fa-bars" aria-hidden="true"></i>
+                        <span> Sections</span> <span class="caret"></span></a>
+                    <ul class="dropdown-menu" role="menu">
+                        <li><a href="/students"><i class="fa fa-graduation-cap" aria-hidden="true"></i> Students</a></li>
+                        <li class="divider"></li>
+                        <li><a href="/testrecords"><i class="fa fa-file-text-o" aria-hidden="true"></i> Test Records</a></li>
+                        <li class="divider"></li>
+                        <li><a href="/feerecords"><i class="fa fa-money" aria-hidden="true"></i> Fee Records</a></li>
+                        {% if g.role == "root" %}
+                        <li class="divider"></li>
+                        <li><a href="/administrators"><i class="fa fa-shield" aria-hidden="true"></i> Administrators</a></li>
+                        {% endif %}
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+                        <i class="fa fa-user-circle" aria-hidden="true"></i>
+                        <span id="currentlyLoggedInUserFullName"> {{ g.firstname }} {{ g.lastname }}</span> <span class="caret"></span></a>
+                    <ul class="dropdown-menu" role="menu">
+                        <li><a href="/userprofile"><i class="fa fa-id-card-o" aria-hidden="true"></i> My Profile</a></li>
+                        <li class="divider"></li>
+                        <li><a href="/logout"><i class="fa fa-sign-out" aria-hidden="true"></i> Logout</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+{% block main %}{% endblock %}
+
+</body>
+</html>

@@ -1,0 +1,60 @@
+{% extends "layout.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block main %}
+<section class="container">
+    <div class="row">
+
+        <div class="col-md-4">
+            <div class="home-sections">
+                <a href="/students" class="btn btn-info btn-lg btn-block" style="text-align: left;">
+                <p><i class="fa fa-2x fa-graduation-cap" aria-hidden="true"></i></p>
+                <span>Students </span>
+                <strong class="badge"> {{ numofstudents }}</strong>
+                </a>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="home-sections">
+                <a href="/testrecords" class="btn btn-default btn-lg btn-block" style="text-align: left;">
+                <p><i class="fa fa-2x fa-file-text-o" aria-hidden="true"></i></p>
+                <span>Test Records </span>
+                </a>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="home-sections">
+                <a href="/feerecords" class="btn btn-success btn-lg btn-block" style="text-align: left;">
+                <p><i class="fa fa-2x fa-money" aria-hidden="true"></i></p>
+                <span>Fee Records </span>
+                </a>
+            </div>
+        </div>
+
+        {% if g.role == "root" %}
+            <div class="col-md-4">
+                <div class="home-sections">
+                    <a href="/administrators" class="btn btn-warning btn-lg btn-block" style="text-align: left;">
+                    <p><i class="fa fa-2x fa-shield" aria-hidden="true"></i></p>
+                    <span>Administrators </span>
+                    <strong class="badge"> {{ numofadmins }}</strong>
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="col-md-4">
+            <div class="home-sections">
+                <a href="/userprofile" class="btn btn-danger btn-lg btn-block" style="text-align: left;">
+                <p><i class="fa fa-2x fa-id-card-o" aria-hidden="true"></i></p>
+                <span>My Profile </span>
+                </a>
+            </div>
+        </div>
+        
+    </div>
+</section>
+{% endblock %}

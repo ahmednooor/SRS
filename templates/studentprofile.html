@@ -1,0 +1,313 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ student["firstname"] }} {{ student["lastname"] }} {% endblock %}
+
+{% block main %}
+
+<section class="container">
+    <div class="row">
+        <div class="col-xs-12">
+            <ul class="breadcrumb">
+            <li><a class="text-primary" href="/home">Home</a></li>
+            <li><a class="text-primary" href="/students">Students</a></li>
+            {% if inactive %}
+            <li><a class="text-primary" href="/students/inactive">Inactive Students</a></li>
+            {% endif %}
+            <li class="active">{{ student["firstname"] }} {{ student["lastname"] }}</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<div class="container">
+    <div class="row">
+        <div class="col-sm-12">
+            <section id="studentInfoPanelContainer">
+            </section>
+        </div>
+    </div>
+</div>
+
+<script src="../static/js/jsPDF.js"></script>
+<script>
+$(document).ready(function () {
+var allStudentsLoaded = false;
+var studentInfoEditable = false;
+var studentLoadedCounter = 0;
+
+loadStudent();
+
+function loadStudent() {
+    $.get('/getstudentprofile/{{ student["id"] }}', {
+    })
+    .done(function (data) {
+        if (data.length == 0) {
+            console.log("No more data left.");
+            allStudentsLoaded = true;
+        } else {
+            studentLoadedCounter++;
+            var v = studentLoadedCounter;
+            $("#studentInfoPanelContainer").html("");
+            var dataLen = data.length;
+            for (var i = 0; i < dataLen; i++) {
+
+                var studentInfoPanel = '\
+                <div class="panel panel-primary" id="sdt">\
+                    <div class="panel-heading">\
+                        <h4 class="modal-title lead"><strong class="">' + data[i]["firstname"] + ' ' + data[i]["lastname"] + '</strong></h4>\
+                        <h4 class="badge"> ID : ' + data[i]["id"] + '</h4>\
+                    </div>\
+                    <div class="panel-body">\
+                        <form class="student-info-form" method="POST" action="" enctype=multipart/form-data>\
+                            <div class="col-md-3 col-sm-4 col-xs-6">\
+                                <img class="img-responsive img-thumbnail" src="' + data[i]['imgURL'] + '?n=' + v + '" alt="">\
+                                <br>\
+                                <br>\
+                            </div>\
+                            <div class="col-md-9 col-sm-8 col-xs-12">\
+                                <div class="form-group">\
+                                    <label class="control-label" for="firstname">First Name:</label>\
+                                    <input class="form-control" disabled id="firstname" type="text" value="' + data[i]['firstname'] + '" name="firstname">\
+                                </div>\
+                                <div class="form-group">\
+                                    <label class="control-label" for="lastname">Last Name:</label>\
+                                    <input class="form-control" disabled id="lastname" type="text" value="' + data[i]['lastname'] + '" name="lastname">\
+                                </div>\
+                                <div class="form-group">\
+                                    <label class="control-label" for="class">Class:</label>\
+                                    <input class="form-control" disabled id="class" type="text" value="' + data[i]['class'] + '" name="class">\
+                                </div>\
+                                <div class="form-group">\
+                                    <label class="control-label" for="fathername">Father Name:</label>\
+                                    <input class="form-control" disabled id="fathername" type="text" value="' + data[i]['fathername'] + '" name="fathername">\
+                                </div>\
+                                <div class="form-group">\
+                                    <label class="control-label" for="contact">Contact:</label>\
+                                    <input class="form-control" disabled id="contact" type="text" value="' + data[i]['contact'] + '" name="contact">\
+                                </div>\
+                                <div class="form-group">\
+                                    <label class="control-label" for="dob">DOB:</label>\
+                                    <input class="form-control" disabled id="dob" type="text" value="' + data[i]['dob'] + '" name="dob">\
+                                </div>\
+                                <div class="form-group">\
+                                    <label class="control-label" for="gender">Gender:</label>\
+                                    <input class="form-control" disabled id="gender" type="text" value="' + data[i]['gender'] + '" name="gender">\
+                                </div>\
+                                <div class="form-group">\
+                                    <label class="control-label" for="address">Address:</label>\
+                                    <textarea class="form-control" disabled id="address" type="text" name="address">' + data[i]['address'] + '</textarea>\
+                                </div>\
+                                <div class="form-group">\
+                                    <label class="control-label" for="admissiondate">Admission Date:</label>\
+                                    <input class="form-control" disabled id="admissiondate" type="text" value="' + data[i]['admissiondate'] + '" name="admissiondate">\
+                                </div>\
+                                <div class="form-group">\
+                                    <label class="control-label" for="monthlyfee">Monthly Fee:</label>\
+                                    <input class="form-control" disabled id="monthlyfee" type="text" value="' + data[i]['monthlyfee'] + '" name="monthlyfee">\
+                                </div>\
+                                <div class="form-group">\
+                                    <label for="status" class="control-label">Status:</label>\
+                                    <div class="">\
+                                        <select class="form-control" disabled id="status" value="' + data[i]["status"] + '" name="status">\
+                                        <option>active</option>\
+                                        <option>inactive</option>\
+                                        </select>\
+                                    </div>\
+                                </div>\
+                                <div class="form-group">\
+                                    <label class="control-label" for="imgURL">Image:</label>\
+                                    <input class="form-control" disabled id="imgURL" type="file" name="imgURL">\
+                                </div>\
+                                <div class="form-group" id="requeststatus">\
+                                </div>\
+                                <br>\
+                                <div class="form-group">\
+                                    <button type="button" data-studentInfoEditable="false" data-modal-id="sdt" class="btn btn-default editStudentInfo">Edit</button>\
+                                    <input class="btn btn-warning hidden saveEditedInfo" data-modal-id="sdt" type="Button" value="Save">\
+                                    <input class="btn btn-success generateIDcard"\
+                                    data-sdt-id="' + data[i]["id"] + '"\
+                                    data-sdt-name="' + data[i]["firstname"] + ' ' + data[i]["lastname"] + '"\
+                                    data-sdt-fathername="' + data[i]["fathername"] + '"\
+                                    data-sdt-class="' + data[i]["class"] + '"\
+                                    data-sdt-imgURL="' + data[i]["imgURL"] + '"\
+                                    data-modal-id="sdt" type="Button" value="Generate Student Card">\
+                                    <a class="btn btn-primary" href="/testrecord/' + data[i]["id"] + '">Test Record</a>\
+                                    <a class="btn btn-primary" href="/feerecord/' + data[i]["id"] + '">Fee Record</a>\
+                                </div>\
+                            </div>\
+                        </form>\
+                        <div class="clearfix"></div>\
+                    </div>\
+                </div>';
+                $("#studentInfoPanelContainer").append(studentInfoPanel)
+                
+                var roleOptions = $("#status > option");
+                roleOptions.each(function () {
+                    var self = $(this); 
+                    if (self.text() == data[i]["status"]) {
+                        self.attr("selected", "");
+                    }
+                });
+
+                $('button.editStudentInfo').on("click", function() {
+                    toggleStudentInfoEditable($(this).attr("data-modal-id"), $(this));
+                });
+                
+                $('input.generateIDcard').on("click", function() {
+                    generateIDcard($(this));
+                });
+
+            }
+            
+            $('input.saveEditedInfo').on("click", function() {
+                var infoModal = $("#" + $(this).attr("data-modal-id"));
+                var formToSend = infoModal.find("form.student-info-form")[0];
+                
+                saveStudentInfo(formToSend);
+            })
+        }
+    })
+    .fail(function () {
+        console.log("ERROR: Couldn't load data from server.");
+    });
+}
+
+function saveStudentInfo(form) {
+    var form_data = new FormData(form);
+    form_data.append("id",  "{{ student['id'] }}");
+    
+    $("#sdt #requeststatus").html('<i class="fa fa-circle-o-notch fa-spin" aria-hidden="true"></i>');
+    
+    $.ajax({
+        type: 'POST',
+        url: '/savestudentinfo/{{ student["id"] }}',
+        data: form_data,
+        contentType: false,
+        processData: false,
+        dataType: 'json'
+    }).done(function(data, textStatus, jqXHR){
+        console.log(data);
+        console.log(textStatus);
+        console.log(jqXHR);
+        console.log('Success!');
+        if (data[0]["status"] == "error") {
+            $("#sdt #requeststatus").html('<div class="alert alert-dismissible alert-danger">\
+            <button type="button" class="close" data-dismiss="alert">&times;</button>\
+            <strong>' + data[0]["msg"] + '</strong>\
+            </div>');
+        } else if (data[0]["status"] == "success") {
+            $("#sdt #requeststatus").html('<div class="alert alert-dismissible alert-success">\
+            <button type="button" class="close" data-dismiss="alert">&times;</button>\
+            <strong>' + data[0]["msg"] + '</strong>\
+            </div>');
+            setTimeout(function() {
+                loadStudent();
+            }, 800);
+        }
+    }).fail(function(data){
+        console.log("ERROR:");
+    });
+}
+
+
+function toggleStudentInfoEditable(id, callee) {
+    if (callee.attr("data-studentInfoEditable") == "false") {
+        $("#" + id + " form.student-info-form .form-control").removeAttr("disabled");
+        $("#" + id + " form.student-info-form .saveEditedInfo").removeClass("hidden");
+        callee.text("Cancel");
+        callee.attr("data-studentInfoEditable", "true");
+    } else if (callee.attr("data-studentInfoEditable") == "true") {
+        $("#" + id + " form.student-info-form .form-control").attr("disabled", "true");
+        $("#" + id + " form.student-info-form .saveEditedInfo").addClass("hidden");
+        callee.text("Edit");
+        callee.attr("data-studentInfoEditable", "false");
+    }
+}
+
+function generateIDcard(callee) {
+    $("#sdt #requeststatus").html('<i class="fa fa-circle-o-notch fa-spin" aria-hidden="true"></i>');
+    var sdtImgAdded = false;
+    var logoAdded = false;
+    var addImageToPDF = function(url) {
+        var img = new Image();
+        img.onError = function() {
+        alert('Cannot load image: "'+url+'"');
+        };
+        img.onload = function() {
+        doc.addImage(img, "JPEG", 0.15, 1, 0.85, 0.85);
+        sdtImgAdded = true;
+        };
+        img.src = url;
+    }
+    var addLogoToPDF = function(url) {
+        var img = new Image();
+        img.onError = function() {
+        alert('Cannot load image: "'+url+'"');
+        };
+        img.onload = function() {
+        doc.addImage(img, "JPEG", 2.28, 0.96, 0.9, 0.9);
+        logoAdded = true;
+        };
+        img.src = url;
+    }
+    var id = callee.attr("data-sdt-id");
+    var name = callee.attr("data-sdt-name");
+    var fathername = callee.attr("data-sdt-fathername");
+    var sdTclass = callee.attr("data-sdt-class");
+    var imgURL = callee.attr("data-sdt-imgURL");
+    var doc = new jsPDF({
+        orientation: 'landscape',
+        unit: 'in',
+        format: [3.5, 2]
+    });
+    
+    doc.setFont('arial');
+    doc.setDrawColor(0)
+    doc.setFillColor(253, 253, 253)
+    doc.rect(0, 0, 3.5, 2, 'F')
+    
+    doc.setFillColor(253, 253, 253)
+    doc.setFillColor(24, 79, 130)
+    doc.rect(3.3, 0, 0.2, 2, 'F')
+
+    doc.setTextColor(253, 253, 253)
+    doc.setFontSize(8);
+    doc.setFontType('bold');
+    doc.text(3.36, 0.2, 'S');
+    doc.text(3.36, 0.35, 'T');
+    doc.text(3.36, 0.5, 'U');
+    doc.text(3.36, 0.65, 'D');
+    doc.text(3.36, 0.8, 'E');
+    doc.text(3.36, 0.95, 'N');
+    doc.text(3.36, 1.1, 'T');
+    doc.text(3.36, 1.25, ' ');
+    doc.text(3.36, 1.4, 'C');
+    doc.text(3.36, 1.55, 'A');
+    doc.text(3.36, 1.7, 'R');
+    doc.text(3.36, 1.85, 'D');
+
+    doc.setFontType('normal');
+    doc.setTextColor(43, 105, 159)
+    doc.setFontSize(10);
+    doc.text(0.15, 0.25, 'Student ID: ' + id);
+    doc.text(0.15, 0.45, 'Name: ' + name);
+    doc.text(0.15, 0.65, 'FName: ' + fathername);
+    doc.text(0.15, 0.85, 'Class: ' + sdTclass);
+
+    doc.setFontType('bold');
+    
+    addImageToPDF(imgURL);
+    addLogoToPDF("../static/img/system/logo.jpg");
+    
+    var imgChkInterval = setInterval(function () {
+        console.log("a)");
+        if (sdtImgAdded == true && logoAdded == true) {
+            doc.save("" + name.replace(/[\-\s]/g, '_') + "_" + id + "_Card.pdf");
+            $("#sdt #requeststatus").html('');
+            clearInterval(imgChkInterval);
+        }
+    }, 100);
+}
+});
+</script>
+{% endblock %}

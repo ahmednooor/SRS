@@ -1,0 +1,113 @@
+{% extends "layout.html" %}
+
+{% block title %}Test Records{% endblock %}
+
+{% block main %}
+
+<section class="container">
+    <div class="row">
+        <div class="col-xs-12">
+            <ul class="breadcrumb">
+            <li><a class="text-primary" href="/home">Home</a></li>
+            <li class="active">Test Records</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<div class="container">
+    <div class="row">
+        <div class="col-xs-12">
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#fetchRecordModal">Fetch Record</button>
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addRecordModal">Add Records</button>
+            <a href="/alltestrecords" class="btn btn-primary">View All Records</a>
+        </div>
+    </div>
+</div>
+<br>
+
+
+<section class="container">
+    <div class="modal fade" id="fetchRecordModal" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title">Fetch Test Record</h4>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="control-label" for="enterStudentID">Enter Student ID</label>
+                <input class="form-control" required id="enterStudentID" type="number" value="">
+            </div>
+            <div class="alert alert-dismissible alert-danger hidden" id="enterStudentIDError">
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                <strong>Enter Student ID to fetch the record.</strong>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+            <a class="btn btn-primary" id="enterStudentIDConfirm" href="">Confirm</a>
+        </div>
+        </div>
+    </div>
+    </div>
+
+    <div class="modal fade" id="addRecordModal" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title">Add Test Records</h4>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="control-label" for="enterRecordsQty">Enter the number of test records.</label>
+                <input class="form-control" required id="enterRecordsQty" type="number" value="">
+            </div>
+            <div class="alert alert-dismissible alert-danger hidden" id="enterRecordsQtyError">
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                <strong>Enter the number of records.</strong>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+            <a class="btn btn-primary" id="enterRecordsQtyConfirm" href="">Confirm</a>
+        </div>
+        </div>
+    </div>
+    </div>
+</section>
+
+
+<script>
+
+$("#enterStudentIDConfirm").on("click", function(e) {
+    var sdtID = $("#enterStudentID").val();
+    if (sdtID == "") {
+        e.preventDefault();
+        $("#enterStudentIDError").removeClass("hidden");
+    } else {
+        $(this).attr("href", "/testrecord/" + sdtID);
+    }
+});
+
+$("#enterRecordsQtyConfirm").on("click", function(e) {
+    var recordQty = $("#enterRecordsQty").val();
+    if (recordQty == "") {
+        e.preventDefault();
+        $("#enterRecordsQtyError").removeClass("hidden");
+    } else {
+        $(this).attr("href", "/addtestrecords/" + recordQty);
+    }
+});
+
+if (window.innerWidth < 760){
+    $(".student-table-container").addClass("table-responsive");
+    $(".student-table-container").css("min-height", "220px;");
+}
+</script>
+
+
+
+{% endblock %}

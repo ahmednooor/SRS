@@ -1,0 +1,428 @@
+{% extends "layout.html" %}
+
+{% block title %}Administrators{% endblock %}
+
+{% block main %}
+
+<section class="container">
+    <div class="row">
+        <div class="col-xs-12">
+            <ul class="breadcrumb">
+            <li><a class="text-primary" href="/home">Home</a></li>
+            <li class="active">Administrators</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+
+<section class="container">
+        <div class="row">
+            <div class="col-xs-12" id="adminSeletionStatusContainer">
+            </div>
+        </div>
+</section>
+
+
+<section class="container">
+    <div class="row">
+        <div class="col-xs-12">
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addNewAdminModal">Add New Admin</button>
+        </div>
+    </div>
+</section>
+
+<section class="container">
+    <div class="row" id="adminListContainer" style="margin-top: 6px;">
+    </div>
+</section>
+
+<section id="adminModalsContainer">
+</section>
+
+<div class="container">
+<div class="modal fade" id="addNewAdminModal" role="dialog">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title lead"><strong>Add New Admin</strong></h4>
+        </div>
+        <div class="modal-body">
+            <form class="admin-info-form" method="post" action="/addnewadmin" enctype=multipart/form-data>
+                <div class="col-sm-4 col-xs-6">
+                    <img class="img-responsive img-thumbnail" src="../static/img/system/default-prof-img.png" alt="">
+                    <br>
+                    <br>
+                </div>
+                <div class="col-sm-8 col-xs-12">
+                    <div class="form-group">
+                        <label class="control-label" for="addNewAdminModalfirstname">First Name:</label>
+                        <input class="form-control" id="addNewAdminModalfirstname" type="text" value="" name="firstname">
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label" for="addNewAdminModallastname">Last Name:</label>
+                        <input class="form-control" id="addNewAdminModallastname" type="text" value="" name="lastname">
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label" for="addNewAdminModalusername">Username:</label>
+                        <input class="form-control" id="addNewAdminModalusername" type="text" value="" name="username">
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label" for="addNewAdminModalpassword">Password:</label>
+                        <input class="form-control" id="addNewAdminModalpassword" type="password" value="" name="password">
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label" for="addNewAdminModalcontact">Contact:</label>
+                        <input class="form-control" id="addNewAdminModalcontact" type="text" value="" name="contact">
+                    </div>
+                    <div class="form-group">
+                        <label for="addNewAdminModalrole" class="control-label">Role:</label>
+                        <div class="">
+                            <select class="form-control" id="addNewAdminModalrole" value="" name="role">
+                            <option selected>admin</option>
+                            <option>root</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label" for="addNewAdminModalimgURL">Image:</label>
+                        <input class="form-control" id="addNewAdminModalimgURL" type="file" name="imgURL">
+                    </div>
+                    <div class="form-group" id="addNewAdminModalrequeststatus">
+                    </div>
+                    <div class="form-group">
+                        <input class="btn btn-warning _saveEditedInfo" data-modal-id="addNewAdminModal" type="Button" value="Save">
+                    </div>
+                </div>
+            </form>
+            <div class="clearfix"></div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-info" data-dismiss="modal">Close</button>
+        </div>
+        </div>
+    </div>
+</div>
+</div>
+
+
+<script>
+$(document).ready(function () {
+var adminListContainer = $("#adminListContainer");
+var allAdminsLoaded = false;
+var adminInfoEditable = false;
+var adminsLoadedCounter = 0;
+loadAdmins();
+
+function loadAdmins() {
+    $.get('/getadmins', {
+    })
+    .done(function (data) {
+        if (data.length == 0) {
+            console.log("No more data left.");
+            allAdminsLoaded = true;
+        } else {
+            adminsLoadedCounter++;
+            var v = adminsLoadedCounter;
+            $("#adminListContainer").html("");
+            $("#adminModalsContainer").html("");
+            var dataLen = data.length;
+            for (var i = 0; i < dataLen; i++) {
+
+                var adminListItem = '\
+                <div class="col-md-4 col-sm-6">\
+                    <div class="db-item-sections">\
+                        <button type="button" class="btn btn-success btn-block admin-info-btn"\
+                        data-toggle="modal" data-target="#adm' + data[i]["id"] + '"\
+                        data-id="' + data[i]["id"] + '"\
+                        data-username="' + data[i]["username"] + '"\
+                        data-firstname="' + data[i]["firstname"] + '"\
+                        data-lastname="' + data[i]["lastname"] + '"\
+                        data-role="' + data[i]["role"] + '"\
+                        data-contact="' + data[i]["contact"] + '"\
+                        data-imgURL="' + data[i]["imgURL"] + '"\
+                        >\
+                            <span class="col-xs-2" style="padding:0;">\
+                                <div class="profile-img-container">\
+                                    <img class="profile-img" src="' + data[i]["imgURL"] + '?n=' + v + '" alt="">\
+                                </div>\
+                            </span>\
+                            <span class="col-xs-10 text-left">\
+                                <p class="" style="white-space:normal;"><strong>' + data[i]["firstname"] + ' ' + data[i]["lastname"] + '</strong></p>\
+                                <span class="label label-primary">Role: ' + data[i]["role"] + '</span>\
+                                <span class="label label-primary">Username: ' + data[i]["username"] + '</span>\
+                            </span>\
+                        </button>\
+                    </div>\
+                </div>';
+                $("#adminListContainer").append(adminListItem);
+
+                var adminListItemModal = '\
+                <div class="modal fade" data-admin-id="' + data[i]["id"] + '" id="adm' + data[i]["id"] + '" role="dialog">\
+                    <div class="modal-dialog modal-lg">\
+                        <div class="modal-content">\
+                        <div class="modal-header">\
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>\
+                            <h4 class="modal-title lead"><strong>' + data[i]["firstname"] + ' ' + data[i]["lastname"] + '</strong></h4>\
+                        </div>\
+                        <div class="modal-body">\
+                            <form class="admin-info-form" method="post" action="/saveadmininfo" enctype=multipart/form-data>\
+                                <div class="col-sm-4 col-xs-6">\
+                                    <img class="img-responsive img-thumbnail" src="' + data[i]["imgURL"] + '?n=' + v + '" alt="">\
+                                    <br>\
+                                    <br>\
+                                </div>\
+                                <div class="col-sm-8 col-xs-12">\
+                                    <div class="form-group">\
+                                        <label class="control-label" for="adm' + data[i]["id"] + 'firstname">First Name:</label>\
+                                        <input class="form-control" disabled id="adm' + data[i]["id"] + 'firstname" type="text" value="' + data[i]["firstname"] + '" name="firstname">\
+                                    </div>\
+                                    <div class="form-group">\
+                                        <label class="control-label" for="adm' + data[i]["id"] + 'lastname">Last Name:</label>\
+                                        <input class="form-control" disabled id="adm' + data[i]["id"] + 'lastname" type="text" value="' + data[i]["lastname"] + '" name="lastname">\
+                                    </div>\
+                                    <div class="form-group">\
+                                        <label class="control-label" for="adm' + data[i]["id"] + 'username">Username:</label>\
+                                        <input class="form-control" disabled id="adm' + data[i]["id"] + 'username" type="text" value="' + data[i]["username"] + '" name="username">\
+                                    </div>\
+                                    <div class="form-group">\
+                                        <label class="control-label" for="adm' + data[i]["id"] + 'password">Password:</label>\
+                                        <input class="form-control" disabled id="adm' + data[i]["id"] + 'password" type="password" value="" name="password">\
+                                    </div>\
+                                    <div class="form-group">\
+                                        <label class="control-label" for="adm' + data[i]["id"] + 'contact">Contact:</label>\
+                                        <input class="form-control" disabled id="adm' + data[i]["id"] + 'contact" type="text" value="' + data[i]["contact"] + '" name="contact">\
+                                    </div>\
+                                    <div class="form-group">\
+                                        <label for="adm' + data[i]["id"] + 'role" class="control-label">Role:</label>\
+                                        <div class="">\
+                                            <select class="form-control" disabled id="adm' + data[i]["id"] + 'role" value="' + data[i]["role"] + '" name="role">\
+                                            <option>admin</option>\
+                                            <option>root</option>\
+                                            </select>\
+                                        </div>\
+                                    </div>\
+                                    <div class="form-group">\
+                                        <label class="control-label" for="adm' + data[i]["id"] + 'imgURL">Image:</label>\
+                                        <input class="form-control" disabled id="adm' + data[i]["id"] + 'imgURL" type="file" name="imgURL">\
+                                    </div>\
+                                    <div class="form-group" id="adm' + data[i]["id"] + 'requeststatus">\
+                                    </div>\
+                                    <div class="form-group">\
+                                        <button type="button" data-adminInfoEditable="false" data-modal-id="adm' + data[i]["id"] + '" class="btn btn-default editAdminInfo">Edit</button>\
+                                        <input class="btn btn-warning hidden saveEditedInfo" data-modal-id="adm' + data[i]["id"] + '" type="Button" value="Save">\
+                                        <input class="btn btn-danger hidden deleteAdminBtn" data-admin-id="' + data[i]["id"] + '" type="Button" value="Delete Admin">\
+                                    </div>\
+                                </div>\
+                            </form>\
+                            <div class="clearfix"></div>\
+                        </div>\
+                        <div class="modal-footer">\
+                            <button type="button" class="btn btn-info" data-dismiss="modal">Close</button>\
+                        </div>\
+                        </div>\
+                    </div>\
+                </div>';
+                $("#adminModalsContainer").append(adminListItemModal)
+
+                var roleOptions = $("#adm" + data[i]["id"] + "role > option");
+                roleOptions.each(function () {
+                    var self = $(this); 
+                    if (self.text() == data[i]["role"]) {
+                        self.attr("selected", "");
+                    }
+                });
+
+            }
+            $('button.editAdminInfo').on("click", function() {
+                toggleAdminInfoEditable($(this).attr("data-modal-id"), $(this));
+            });
+            $('input.deleteAdminBtn').on("click", function() {
+                $("body").remove("#adminRemovalConfimationModal");
+                var adminToRemoveId = $(this).attr("data-admin-id");
+                var adminData = $("button[data-id='" + $(this).attr("data-admin-id") + "'" );
+                var confirmationModal = '\
+                <div class="modal fade" id="adminRemovalConfimationModal" role="dialog">\
+                    <div class="modal-dialog">\
+                        <div class="modal-content">\
+                        <div class="modal-header">\
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>\
+                        </div>\
+                        <div class="modal-body">\
+                            <div class="alert alert-dismissible alert-danger">\
+                                <p>Are you sure you want to delete <strong>' + adminData.attr("data-firstname") + ' ' + adminData.attr("data-lastname") + '</strong></p>\
+                            </div>\
+                        </div>\
+                        <div class="modal-footer">\
+                            <button type="button" class="btn btn-default" data-modal-id="adminRemovalConfimationModal" data-dismiss="modal">Cancel</button>\
+                            <button type="button" class="btn btn-danger confirmAdminDeleteBtn" data-admin-id="' + adminToRemoveId + '">Confirm Delete</button>\
+                        </div>\
+                        </div>\
+                    </div>\
+                </div>';
+                $("body").append(confirmationModal);
+                
+                $("#adminRemovalConfimationModal").modal("show");
+                
+                $('#adminRemovalConfimationModal').on('hidden.bs.modal', function () {
+                    setTimeout(function() {
+                        $("body").addClass("modal-open");
+                    }, 350);
+                })
+                
+                $("button.confirmAdminDeleteBtn").on("click", function () {
+                    deleteAdmin($(this).attr("data-admin-id"));
+                });
+            });
+
+            $('input.saveEditedInfo').on("click", function() {
+                var infoModal = $("#" + $(this).attr("data-modal-id"));
+                var formToSend = infoModal.find("form.admin-info-form")[0];
+                var id = infoModal.attr("data-admin-id");
+                
+                saveAdminInfo(formToSend, id);
+            })
+        }
+    })
+    .fail(function () {
+        console.log("ERROR: Couldn't load data from server.");
+    });
+}
+
+function saveAdminInfo(form, modalId) {
+    var form_data = new FormData(form);
+    form_data.append("id", modalId);
+
+    $("#adm" + modalId + "requeststatus").html('<i class="fa fa-circle-o-notch fa-spin" aria-hidden="true"></i>');
+    
+    $.ajax({
+        type: 'POST',
+        url: '/saveadmininfo',
+        data: form_data,
+        contentType: false,
+        processData: false,
+        dataType: 'json'
+    }).done(function(data, textStatus, jqXHR){
+        console.log(data);
+        console.log(textStatus);
+        console.log(jqXHR);
+        console.log('Success!');
+        if (data[0]["status"] == "error") {
+            $("#adm" + modalId + "requeststatus").html('<div class="alert alert-dismissible alert-danger">\
+            <button type="button" class="close" data-dismiss="alert">&times;</button>\
+            <strong>' + data[0]["msg"] + '</strong>\
+            </div>');
+        } else if (data[0]["status"] == "success") {
+            $("#adm" + modalId + "requeststatus").html('<div class="alert alert-dismissible alert-success">\
+            <button type="button" class="close" data-dismiss="alert">&times;</button>\
+            <strong>' + data[0]["msg"] + '</strong>\
+            </div>');
+            setTimeout(function() {
+                loadAdmins("adm" + modalId);
+            }, 1200);
+            setTimeout(function() {
+                $("#adm" + modalId).modal("toggle");
+            }, 600);
+        }
+    }).fail(function(data){
+        console.log("ERROR:");
+    });
+}
+
+$('input._saveEditedInfo').on("click", function() {
+    var infoModal = $("#" + $(this).attr("data-modal-id"));
+    var formToSend = infoModal.find("form.admin-info-form")[0];
+    var id = infoModal.attr("id");
+    
+    addNewAdmin(formToSend, id);
+})
+
+function addNewAdmin(form, modalId) {
+    var form_data = new FormData(form);
+    form_data.append("id", modalId);
+
+    $("#" + modalId + "requeststatus").html('<i class="fa fa-circle-o-notch fa-spin" aria-hidden="true"></i>');
+
+    $.ajax({
+        type: 'POST',
+        url: '/addnewadmin',
+        data: form_data,
+        contentType: false,
+        processData: false,
+        dataType: 'json'
+    }).done(function(data, textStatus, jqXHR){
+        console.log(data);
+        console.log(textStatus);
+        console.log(jqXHR);
+        console.log('Success!');
+
+        if (data[0]["status"] == "error") {
+            $("#" + modalId + "requeststatus").html('<div class="alert alert-dismissible alert-danger">\
+            <button type="button" class="close" data-dismiss="alert">&times;</button>\
+            <strong>' + data[0]["msg"] + '</strong>\
+            </div>');
+        } else if (data[0]["status"] == "success") {
+            $("#" + modalId + "requeststatus").html('<div class="alert alert-dismissible alert-success">\
+            <button type="button" class="close" data-dismiss="alert">&times;</button>\
+            <strong>' + data[0]["msg"] + '</strong>\
+            </div>');
+            setTimeout(function() {
+                loadAdmins("");
+                $("#addNewAdminModal form")[0].reset();
+                ("#" + modalId + "requeststatus").html("");
+            }, 1200);
+            setTimeout(function() {
+                $("#" + modalId).modal("toggle");
+            }, 600);
+        }
+    }).fail(function(data){
+        console.log("ERROR:");
+    });
+}
+
+function deleteAdmin(adminId) {
+    $.post("/deleteadmin", {
+        id: adminId
+    }).done(function(data, textStatus, jqXHR){
+        if (data[0]["status"] == "error") {
+            $("#adminSeletionStatusContainer").html('<div class="alert alert-dismissible alert-danger">\
+                <button type="button" class="close" data-dismiss="alert">&times;</button>\
+                <strong>' + data[0]["msg"] + '</strong>\
+            </div>');
+        } else if (data[0]["status"] == "success") {
+            $("#adminSeletionStatusContainer").html('<div class="alert alert-dismissible alert-danger">\
+                <button type="button" class="close" data-dismiss="alert">&times;</button>\
+                <strong>' + data[0]["msg"] + ' ' + data[0]["firstname"] + ' ' + data[0]["lastname"] + '</strong>\
+            </div>');
+            setTimeout(function() {
+                loadAdmins("");
+            }, 400);
+            setTimeout(function() {
+                $(".modal").modal("hide");
+            }, 50);
+        }
+    }).fail(function(data){
+        console.log("ERROR:");
+    });
+}
+
+function toggleAdminInfoEditable(id, callee) {
+    if (callee.attr("data-adminInfoEditable") == "false") {
+        $("#" + id + " form.admin-info-form .form-control").removeAttr("disabled");
+        $("#" + id + " form.admin-info-form .saveEditedInfo").removeClass("hidden");
+        $("#" + id + " form.admin-info-form .deleteAdminBtn").removeClass("hidden");
+        callee.text("Cancel");
+        callee.attr("data-adminInfoEditable", "true");
+    } else if (callee.attr("data-adminInfoEditable") == "true") {
+        $("#" + id + " form.admin-info-form .form-control").attr("disabled", "true");
+        $("#" + id + " form.admin-info-form .saveEditedInfo").addClass("hidden");
+        $("#" + id + " form.admin-info-form .deleteAdminBtn").addClass("hidden");
+        callee.text("Edit");
+        callee.attr("data-adminInfoEditable", "false");
+    }
+}
+
+});
+</script>
+{% endblock %}

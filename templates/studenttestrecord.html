@@ -1,0 +1,74 @@
+{% extends "layout.html" %}
+
+{% block title %}Test Records{% endblock %}
+
+{% block main %}
+
+<section class="container">
+    <div class="row">
+        <div class="col-xs-12">
+            <ul class="breadcrumb">
+            <li><a class="text-primary" href="/home">Home</a></li>
+            <li><a class="text-primary" href="/testrecords">Test Records</a></li>
+            <li><a class="text-primary" href="/students">Students</a></li>
+            <li class="active">{{ studentName }}</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<section class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="record-table-container panel panel-default">
+                <table class="table table-bordered" id="studentsTable" style="background:white;">
+                    <thead>
+                        <tr class="success">
+                            <th class="text-right">#</th>
+                            <th class="text-right">St. ID</th>
+                            <th class="">Student Name</th>
+                            <th class="">Date</th>
+                            <th class="">Class</th>
+                            <th class="">Subject</th>
+                            <th class="">Description</th>
+                            <th class="">Total Marks</th>
+                            <th class="">Obtained Marks</th>
+                            <th class="">Percentage</th>
+                            <th class="">Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in records %}
+                        <tr class="">
+                            <td class="text-right">{{ record["id"] }}</td>
+                            <td class="text-right">{{ record["studentID"] }}</td>
+                            <td class=""><a href="/studentprofile/{{ studentID }}" class="text-primary">{{ studentName }}</a></td>
+                            <td class="">{{ record["date"] }}</td>
+                            <td class="">{{ record["class"] }}</td>
+                            <td class="">{{ record["subject"] }}</td>
+                            <td class="">{{ record["description"] }}</td>
+                            <td class="">{{ record["totalmarks"] }}</td>
+                            <td class="">{{ record["obtainedmarks"] }}</td>
+                            <td class="">{{ record["obtainedpercentage"] }}</td>
+                            <td class="">{{ record["remarks"] }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+$(document).ready(function () {
+if (window.innerWidth < 760){
+    $(".record-table-container").addClass("table-responsive");
+    $(".record-table-container").css("min-height", "220px;");
+}
+});
+</script>
+
+
+
+{% endblock %}
