@@ -1,6 +1,6 @@
 '''
     App: Student Record System
-    Tech Stack: Python(Flask), SQLite, HTML, CSS, Javascript(JQuery)
+    Stack: Python(Flask), SQLite, HTML, CSS, Javascript(JQuery)
     Author: Ahmed Noor
 '''
 
@@ -69,7 +69,7 @@ class SQL(object):
 
 ### configure flask
 app = Flask(__name__)
-# Compress(app)
+Compress(app)
 
 app.secret_key = uuid.uuid4().hex
 
@@ -82,7 +82,7 @@ def allowed_file(filename):
 
 ### Convert string to int type possibility confirmation
 def RepresentsInt(s):
-    try: 
+    try:
         int(s)
         return True
     except ValueError:
@@ -90,7 +90,8 @@ def RepresentsInt(s):
 
 
 ### configure CS50 Library to use SQLite database
-db = SQL("sqlite:///./db/system.db")
+THIS_FOLDER_G = os.path.dirname(os.path.abspath(__file__))
+db = SQL("sqlite:///" + THIS_FOLDER_G + "/db/system.db")
 
 ### Disable cache
 @app.after_request
@@ -229,13 +230,14 @@ def saveadmininfo():
             for i in range(len(admins)):
                 if admins[i]["username"] == username and admins[i]["id"] != int(id):
                     return jsonify([{"status": "error", "msg": "Username already taken."}])
-            
+
             if image:
                 if allowed_file(image.filename) == True:
                     imagename = image.filename
                     imageext = imagename.split(".")[-1]
                     imagename = "admin_" + str(id) + "." + imageext
-                    image.save(os.path.join(os.getcwd()+"/static/img/db/admins", imagename))
+                    THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
+                    image.save(os.path.join(THIS_FOLDER + "/static/img/db/admins/", imagename))
                     imgURL = "../static/img/db/admins/" + imagename
                     db.execute("UPDATE admins SET imgURL=:imgURL WHERE id=:id", imgURL=imgURL, id=int(id))
                 else:
@@ -246,7 +248,7 @@ def saveadmininfo():
             db.execute("UPDATE admins SET username=:username WHERE id=:id", username=username, id=int(id))
             db.execute("UPDATE admins SET contact=:contact WHERE id=:id", contact=contact, id=int(id))
             db.execute("UPDATE admins SET role=:role WHERE id=:id", role=role, id=int(id))
-            
+
             if password != "":
                 db.execute("UPDATE admins SET password=:password WHERE id=:id", password=sha256_crypt.hash(password), id=int(id))
 
@@ -276,7 +278,7 @@ def addnewadmin():
             for i in range(len(admins)):
                 if admins[i]["username"] == username:
                     return jsonify([{"status": "error", "msg": "Username already taken."}])
-            
+
             imgURL = "../static/img/system/default-prof-img.png"
             if image:
                 if allowed_file(image.filename) == True:
@@ -286,14 +288,15 @@ def addnewadmin():
                     imagename = image.filename
                     imageext = imagename.split(".")[-1]
                     imagename = "admin_" + str(newuser[0]["id"]) + "." + imageext
-                    image.save(os.path.join(os.getcwd()+"/static/img/db/admins", imagename))
+                    THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
+                    image.save(os.path.join(THIS_FOLDER + "/static/img/db/admins/", imagename))
                     imgURL = "../static/img/db/admins/" + imagename
                     db.execute("UPDATE admins SET imgURL=:imgURL WHERE id=:id", imgURL=imgURL, id=newuser[0]["id"])
                 else:
                     return jsonify([{"status": "error", "msg": "File extension not supported."}])
             else:
                 db.execute("INSERT INTO admins (username, firstname, lastname, password, role, contact, imgURL) VALUES (:username, :firstname, :lastname, :password, :role, :contact, :imgURL)", username=username, firstname=firstname, lastname=lastname, password=sha256_crypt.hash(password), role=role, contact=contact, imgURL=imgURL)
-            
+
             return jsonify([{"status": "success", "msg": "Changes saved."}])
     else:
         return redirect(url_for("home"))
@@ -356,9 +359,9 @@ def saveuserprofile():
             for i in range(len(admins)):
                 if admins[i]["username"] == username and admins[i]["id"] != int(id):
                     return jsonify([{"status": "error", "msg": "Username already taken."}])
-            
+
             users = db.execute("SELECT * FROM admins WHERE id=:id", id=int(g.user))
-            
+
             if password != "":
                 if sha256_crypt.verify(oldpassword, users[0]["password"]) == True:
                     db.execute("UPDATE admins SET password=:password WHERE id=:id", password=sha256_crypt.hash(password), id=int(id))
@@ -370,7 +373,8 @@ def saveuserprofile():
                     imagename = image.filename
                     imageext = imagename.split(".")[-1]
                     imagename = "admin_" + str(id) + "." + imageext
-                    image.save(os.path.join(os.getcwd()+"/static/img/db/admins", imagename))
+                    THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
+                    image.save(os.path.join(THIS_FOLDER + "/static/img/db/admins/", imagename))
                     imgURL = "../static/img/db/admins/" + imagename
                     db.execute("UPDATE admins SET imgURL=:imgURL WHERE id=:id", imgURL=imgURL, id=int(id))
                 else:
@@ -380,9 +384,9 @@ def saveuserprofile():
             db.execute("UPDATE admins SET lastname=:lastname WHERE id=:id", lastname=lastname, id=int(id))
             db.execute("UPDATE admins SET username=:username WHERE id=:id", username=username, id=int(id))
             db.execute("UPDATE admins SET contact=:contact WHERE id=:id", contact=contact, id=int(id))
-            
+
             users = db.execute("SELECT * FROM admins WHERE id=:id", id=int(g.user))
-            
+
             if len(users) > 0:
                 session["username"] = users[0]["username"]
                 session["firstname"] = users[0]["firstname"]
@@ -479,7 +483,8 @@ def savestudentinfo(id):
                     imagename = image.filename
                     imageext = imagename.split(".")[-1]
                     imagename = "student_" + str(id) + "." + imageext
-                    image.save(os.path.join(os.getcwd()+"/static/img/db/students", imagename))
+                    THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
+                    image.save(os.path.join(THIS_FOLDER + "/static/img/db/students/", imagename))
                     imgURL = "../static/img/db/students/" + imagename
                     db.execute("UPDATE students SET imgURL=:imgURL WHERE id=:id", imgURL=imgURL, id=int(id))
                 else:
@@ -526,7 +531,7 @@ def addnewstudent():
                 return jsonify([{"status": "error", "msg": "Incomplete Details."}])
             elif RepresentsInt(monthlyfee) != True:
                 return jsonify([{"status": "error", "msg": "Incompatible Details."}])
-            
+
             imgURL = "../static/img/system/default-prof-img.png"
             if image:
                 if allowed_file(image.filename) == True:
@@ -538,20 +543,21 @@ def addnewstudent():
                         for j in range(len(students_)):
                             if students_[i]["id"] >= students_[j]["id"]:
                                 student = students_[i]
-                    
+
                     if student != None and student['firstname'] == firstname and student['lastname'] == lastname and student['fathername'] == fathername and student['gender'] == gender and student['dob'] == dob and student['address'] == address and student['class'] == class_ and student['admissiondate'] == admissiondate and student['monthlyfee'] == int(monthlyfee):
                         id = student['id']
                         imagename = image.filename
                         imageext = imagename.split(".")[-1]
                         imagename = "student_" + str(id) + "." + imageext
-                        image.save(os.path.join(os.getcwd()+"/static/img/db/students", imagename))
+                        THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
+                        image.save(os.path.join(THIS_FOLDER + "/static/img/db/students/", imagename))
                         imgURL = "../static/img/db/students/" + imagename
                         db.execute("UPDATE students SET imgURL=:imgURL WHERE id=:id", imgURL=imgURL, id=int(id))
                 else:
                     return jsonify([{"status": "error", "msg": "File extension not supported."}])
             else:
                 db.execute("INSERT INTO students (firstname, lastname, fathername, contact, gender, dob, address, class, admissiondate, monthlyfee, imgURL) VALUES (:firstname, :lastname, :fathername, :contact, :gender, :dob, :address, :class_, :admissiondate, :monthlyfee, :imgURL)", firstname=firstname, lastname=lastname, fathername=fathername, contact=contact, gender=gender, dob=dob, address=address, class_=class_, admissiondate=admissiondate, monthlyfee=int(monthlyfee), imgURL=imgURL)
-            
+
             return jsonify([{"status": "success", "msg": "Changes saved."}])
     else:
         return redirect(url_for("home"))
@@ -631,7 +637,7 @@ def addnewtestrecord():
                 return jsonify([{"status": "error", "msg": "Incomplete data."}])
             elif RepresentsInt(studentID) != True or RepresentsInt(totalmarks) != True or RepresentsInt(obtainedmarks) != True:
                 return jsonify([{"status": "error", "msg": "Incompatible data."}])
-            
+
             student = db.execute("SELECT * FROM students WHERE id=:id", id=int(studentID))
             if len(student) < 1:
                 return jsonify([{"status": "error", "msg": "No Student with entered ID."}])
@@ -711,9 +717,9 @@ def addnewfeerecord():
 
             if studentID == "" or date == "" or feemonth == "" or depositedfee == "":
                 return jsonify([{"status": "error", "msg": "Incomplete data."}])
-            elif RepresentsInt(studentID) != True or RepresentsInt(depositedfee) != True:         
+            elif RepresentsInt(studentID) != True or RepresentsInt(depositedfee) != True:
                 return jsonify([{"status": "error", "msg": "Incompatible data."}])
-            
+
             student = db.execute("SELECT * FROM students WHERE id=:id", id=int(studentID))
             if len(student) < 1:
                 return jsonify([{"status": "error", "msg": "No Student with entered ID."}])
@@ -727,4 +733,4 @@ def addnewfeerecord():
 
 ### Run Flask App
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=80)
+      app.run(debug=True)
