@@ -18,7 +18,7 @@
         
         <div class="col-md-4">
             <div class="home-sections">
-                <a href="/testrecords" class="btn btn-default btn-lg btn-block" style="text-align: left;">
+                <a href="/testrecords" class="btn btn-success btn-lg btn-block" style="text-align: left;">
                 <p><i class="fa fa-2x fa-file-text-o" aria-hidden="true"></i></p>
                 <span>Test Records </span>
                 </a>
@@ -55,6 +55,17 @@
             </div>
         </div>
         
+        {% if g.role == "root" %}
+            <div class="col-md-4">
+                <div class="home-sections">
+                    <a href="/systemsettings" class="btn btn-primary btn-lg btn-block" style="text-align: left;">
+                    <p><i class="fa fa-2x fa-cogs" aria-hidden="true"></i></p>
+                    <span>System Settings </span>
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+
     </div>
 </section>
 {% endblock %}

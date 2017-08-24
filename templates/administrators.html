@@ -319,7 +319,7 @@ function saveAdminInfo(form, modalId) {
             <strong>' + data[0]["msg"] + '</strong>\
             </div>');
             setTimeout(function() {
-                loadAdmins("adm" + modalId);
+                loadAdmins();
             }, 1200);
             setTimeout(function() {
                 $("#adm" + modalId).modal("toggle");
@@ -368,9 +368,9 @@ function addNewAdmin(form, modalId) {
             <strong>' + data[0]["msg"] + '</strong>\
             </div>');
             setTimeout(function() {
-                loadAdmins("");
+                loadAdmins();
                 $("#addNewAdminModal form")[0].reset();
-                ("#" + modalId + "requeststatus").html("");
+                $("#" + modalId + "requeststatus").html("");
             }, 1200);
             setTimeout(function() {
                 $("#" + modalId).modal("toggle");
@@ -396,8 +396,8 @@ function deleteAdmin(adminId) {
                 <strong>' + data[0]["msg"] + ' ' + data[0]["firstname"] + ' ' + data[0]["lastname"] + '</strong>\
             </div>');
             setTimeout(function() {
-                loadAdmins("");
-            }, 400);
+                window.location.reload(true);
+            }, 1200);
             setTimeout(function() {
                 $(".modal").modal("hide");
             }, 50);

@@ -1,0 +1,121 @@
+{% extends "layout.html" %}
+
+{% block title %}Fee Receipt{% endblock %}
+
+{% block main %}
+
+
+<section class="container">
+    <div class="row">
+        <div class="col-xs-12">
+            <ul class="breadcrumb">
+            <li><a class="text-primary" href="/home">Home</a></li>
+            <li><a class="text-primary" href="/feerecords">Fee Records</a></li>
+            <li class="active">Fee Receipt</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<section class="container">
+    <div class="row">
+        <div class="col-xs-12">
+            <h2 class="text-center">
+                {{ msg }}
+            </h2>
+        </div>
+    </div>
+</section>
+
+{% if feeRecord %}
+<script src="../static/js/jsPDF.js"></script>
+<script>
+$(document).ready(function () {
+
+
+function generateFeeReceipt() {
+    
+    var doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'in',
+        format: [8.27, 11.69]
+    });
+    
+    doc.setFont('arial');
+    // doc.setFontType('bold');
+    doc.setFontSize(16);
+    doc.text(0.5, 0.5, '{{ g.systemsettings["institutionname"] }}');
+    doc.setFontType('normal');
+    doc.setFontSize(12);
+    doc.text(0.5, 0.8, 'Fee Receipt - ( Student Copy )');
+    doc.setFont('courier');
+    doc.setFontSize(12);
+    doc.setLineWidth(0.01);
+    doc.text(0.5, 1.3, 'Receipt ID: ');
+    doc.text(2.2, 1.3, '{{ feeRecord["id"] }}');
+    doc.line(0.5, 1.4, 7.75, 1.4);
+    doc.text(0.5, 1.6, 'Student ID: ');
+    doc.text(2.2, 1.6, '{{ feeRecord["studentID"] }}');
+    doc.line(0.5, 1.7, 7.75, 1.7);
+    doc.text(0.5, 1.9, 'Student Name: ');
+    doc.text(2.2, 1.9, '{{ feeRecord["studentName"] }}');
+    doc.line(0.5, 2.0, 7.75, 2.0);
+    doc.text(0.5, 2.2, 'Father Name: ');
+    doc.text(2.2, 2.2, '{{ feeRecord["studentFrName"] }}');
+    doc.line(0.5, 2.3, 7.75, 2.3);
+    doc.text(0.5, 2.5, 'Fee For: ');
+    doc.text(2.2, 2.5, '{{ feeRecord["feefor"] }}');
+    doc.line(0.5, 2.6, 7.75, 2.6);
+    doc.text(0.5, 2.8, 'Deposited On: ');
+    doc.text(2.2, 2.8, '{{ feeRecord["date"] }}');
+    doc.line(0.5, 2.9, 7.75, 2.9);
+    doc.text(0.5, 3.1, 'Fee Deposited: ');
+    doc.text(2.2, 3.1, '{{ feeRecord["depositedfee"] }}/-');
+    doc.line(0.5, 3.2, 7.75, 3.2);
+    doc.line(0.5, 3.8, 2, 3.8);
+    doc.text(0.5, 4.0, 'Signature/Stamp');
+    
+    doc.line(0.0, 4.8, 8.27, 4.8);
+
+    doc.setFont('arial');
+    // doc.setFontType('bold');
+    doc.setFontSize(16);
+    doc.text(0.5, 5.5, '{{ g.systemsettings["institutionname"] }}');
+    doc.setFontType('normal');
+    doc.setFontSize(12);
+    doc.text(0.5, 5.8, 'Fee Receipt - ( Office Copy )');
+    doc.setFont('courier');
+    doc.setFontSize(12);
+    doc.setLineWidth(0.01);
+    doc.text(0.5, 6.3, 'Receipt ID: ');
+    doc.text(2.2, 6.3, '{{ feeRecord["id"] }}');
+    doc.line(0.5, 6.4, 7.75, 6.4);
+    doc.text(0.5, 6.6, 'Student ID: ');
+    doc.text(2.2, 6.6, '{{ feeRecord["studentID"] }}');
+    doc.line(0.5, 6.7, 7.75, 6.7);
+    doc.text(0.5, 6.9, 'Student Name: ');
+    doc.text(2.2, 6.9, '{{ feeRecord["studentName"] }}');
+    doc.line(0.5, 7.0, 7.75, 7.0);
+    doc.text(0.5, 7.2, 'Father Name: ');
+    doc.text(2.2, 7.2, '{{ feeRecord["studentFrName"] }}');
+    doc.line(0.5, 7.3, 7.75, 7.3);
+    doc.text(0.5, 7.5, 'Fee For: ');
+    doc.text(2.2, 7.5, '{{ feeRecord["feefor"] }}');
+    doc.line(0.5, 7.6, 7.75, 7.6);
+    doc.text(0.5, 7.8, 'Deposited On: ');
+    doc.text(2.2, 7.8, '{{ feeRecord["date"] }}');
+    doc.line(0.5, 7.9, 7.75, 7.9);
+    doc.text(0.5, 8.1, 'Fee Deposited: ');
+    doc.text(2.2, 8.1, '{{ feeRecord["depositedfee"] }}/-');
+    doc.line(0.5, 8.2, 7.75, 8.2);
+    doc.line(0.5, 8.8, 2, 8.8);
+    doc.text(0.5, 9.0, 'Signature/Stamp');
+
+    doc.save('fee_{{ feeRecord["id"] }}.pdf');
+}
+generateFeeReceipt();
+});
+</script>
+{% endif %}
+
+{% endblock %}

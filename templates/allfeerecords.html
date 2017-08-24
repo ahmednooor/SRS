@@ -19,16 +19,18 @@
 <section class="container">
     <div class="row">
         <div class="col-md-12">
-            <div class="record-table-container panel panel-default">
-                <table class="table table-bordered table-striped" id="studentsTable" style="background:white;">
+            <div class="record-table-container">
+                <table class="table table-bordered table-striped" id="feeRecordsTable" style="background:white;">
                     <thead>
                         <tr class="success">
                             <th class="text-right">Rd. ID</th>
                             <th class="text-right">St. ID</th>
                             <th class="">Student Name</th>
+                            <th class="">Father Name</th>
                             <th class="">Date</th>
-                            <th class="">Fee Month</th>
+                            <th class="">Fee For</th>
                             <th class="">Deposited Fee</th>
+                            <th class="">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -36,10 +38,12 @@
                         <tr class="">
                             <td class="text-right">{{ record["id"] }}</td>
                             <td class="text-right">{{ record["studentID"] }}</td>
-                            <td class=""><a href="/studentprofile/{{ record['studentID'] }}" class="text-primary">{{ record["studentNAME"] }}</a></td>
-                            <td class="">{{ record["date"] }}</td>
-                            <td class="">{{ record["feemonth"] }}</td>
+                            <td class=""><a href="/studentprofile/{{ record['studentID'] }}" class="text-primary">{{ record["studentName"] }}</a></td>
+                            <td class="">{{ record["studentFrName"] }}</td>
+                            <td class="col-md-2">{{ record["date"] }}</td>
+                            <td class="">{{ record["feefor"] }}</td>
                             <td class="">{{ record["depositedfee"] }}</td>
+                            <td class=""><a href="/downloadfeereceipt/{{ record['id'] }}" class="btn btn-primary btn-xs" target="_blank" title="Download"><i class="fa fa-download" aria-hidden="true"></i></a>&nbsp;&nbsp;<a href="/editfeerecord/{{ record['id'] }}" class="btn btn-primary btn-xs" title="Edit"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a></td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -51,6 +55,11 @@
 
 <script>
 $(document).ready(function () {
+$('#feeRecordsTable').DataTable({
+    paging: true,
+    searching: true,
+    info: true
+});
 if (window.innerWidth < 760){
     $(".record-table-container").addClass("table-responsive");
     $(".record-table-container").css("min-height", "220px;");

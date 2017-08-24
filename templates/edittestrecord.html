@@ -1,0 +1,162 @@
+{% extends "layout.html" %}
+
+{% block title %}Edit Test Record{% endblock %}
+
+{% block main %}
+
+<section class="container">
+    <div class="row">
+        <div class="col-xs-12">
+            <ul class="breadcrumb">
+            <li><a class="text-primary" href="/home">Home</a></li>
+            <li><a class="text-primary" href="/testrecords">Test Records</a></li>
+            <li class="active">Edit Test Record</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<div class="container">
+    <div class="row">
+        <div class="col-xs-12">
+            <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteRecordModal">Delete Record</button>
+        </div>
+    </div>
+</div>
+<br>
+
+<section class="container">
+    <div class="modal fade" id="deleteRecordModal" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="alert alert-dismissible alert-danger">
+                <p>Are you sure you want to permanently delete this record?</p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-modal-id="studentRemovalConfimationModal" data-dismiss="modal">Cancel</button>
+            <a class="btn btn-danger" href="/deletetestrecord/{{ record['id'] }}">Confirm Delete</a>
+        </div>
+        </div>
+    </div>
+    </div>
+</section>
+
+<section class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="record-table-container panel panel-default table-responsive">
+                <table class="table table-bordered table-condensed" id="studentsTable" style="background:white;">
+                    <thead>
+                        <tr class="success">
+                            <th class="text-right">Rd. ID</th>
+                            <th class="text-right">St. ID</th>
+                            <th class="">Student Name</th>
+                            <th class="">Father Name</th>
+                            <th class="">Date</th>
+                            <th class="">Class</th>
+                            <th class="">Subject</th>
+                            <th class="">Description</th>
+                            <th class="">Total Marks</th>
+                            <th class="">Obtained Marks</th>
+                            <th class="">Remarks</th>
+                            <th class="text-center">Submit</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="">
+                            <form id="recordForm" class="test-record-form" method="post">
+                            <td class="col-md-1 text-right">
+                                {{ record['id'] }}
+                            </td>
+                            <td class="col-md-1">
+                                <input class="form-control c-p" name="studentID" type="text" value="{{ record['studentID'] }}" placeholder="St. ID">
+                            </td>
+                            <td class="col-md-3">
+                                <input class="form-control c-p" name="studentName" type="text" value="{{ record['studentName'] }}" placeholder="Student Name">
+                            </td>
+                            <td class="col-md-3">
+                                <input class="form-control c-p" name="studentFrName" type="text" value="{{ record['studentFrName'] }}" placeholder="Father Name">
+                            </td>
+                            <td class="col-md-1">
+                                <input class="form-control c-p" name="date" type="date" value="{{ record['date'] }}" placeholder="Date">
+                            </td>
+                            <td class="col-md-1">
+                                <input class="form-control c-p" name="class" type="text" value="{{ record['class'] }}" placeholder="Class">
+                            </td>
+                            <td class="col-md-1">
+                                <input class="form-control c-p" name="subject" type="text" value="{{ record['subject'] }}" placeholder="Subject">
+                            </td>
+                            <td class="">
+                                <input class="form-control c-p" name="description" type="text" value="{{ record['description'] }}" placeholder="Description">
+                            </td>
+                            <td class="col-md-1">
+                                <input class="form-control c-p" name="totalmarks" type="text" value="{{ record['totalmarks'] }}" placeholder="Total Marks">
+                            </td>
+                            <td class="col-md-1">
+                                <input class="form-control c-p" name="obtainedmarks" type="text" value="{{ record['obtainedmarks'] }}" placeholder="Obtained Marks">
+                            </td>
+                            <td class="">
+                                <input class="form-control c-p" name="remarks" type="text" value="{{ record['remarks'] }}" placeholder="Remarks">
+                            </td>
+                            <td class="text-center">
+                                <input class="btn btn-warning c-p" type="Submit" value="Submit">
+                            </td>
+                            </form>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+$(document).ready(function () {
+$(".test-record-form").on("submit", function(e) {
+    e.preventDefault();
+    addNewTestRecord($(this)[0], $(this).attr("id"))
+});
+
+function addNewTestRecord(form, formID) {
+    var form_data = new FormData(form);
+
+    $.ajax({
+        type: 'POST',
+        url: '/updatetestrecord/{{ record["id"] }}',
+        data: form_data,
+        contentType: false,
+        processData: false,
+        dataType: 'json'
+    }).done(function(data, textStatus, jqXHR){
+        console.log(data);
+        console.log(textStatus);
+        console.log(jqXHR);
+        console.log('Success!');
+        if (data[0]["status"] == "error") {
+            $("#" + formID).parent().addClass("danger");
+        } else if (data[0]["status"] == "success") {
+            $("#" + formID).parent().removeClass("danger");
+            $("#" + formID).parent().find("input[type='Submit']").removeClass("btn-warning");
+            $("#" + formID).parent().find("input[type='Submit']").addClass("btn-default");
+            $("#" + formID).parent().find("input[type='Submit']").addClass("btn-xs");
+            $("#" + formID).parent().find("input[type='Submit']").val("Submitted");
+            $("#" + formID).parent().find("input").attr("disabled", "true");
+        }
+    }).fail(function(data){
+        console.log("ERROR:");
+    });
+}
+
+if (window.innerWidth < 760){
+    $(".record-table-container").addClass("table-responsive");
+    $(".record-table-container").css("min-height", "220px;");
+}
+});
+</script>
+
+{% endblock %}

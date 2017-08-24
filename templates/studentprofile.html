@@ -91,7 +91,12 @@ function loadStudent() {
                                 </div>\
                                 <div class="form-group">\
                                     <label class="control-label" for="gender">Gender:</label>\
-                                    <input class="form-control" disabled id="gender" type="text" value="' + data[i]['gender'] + '" name="gender">\
+                                    <div class="">\
+                                        <select class="form-control" id="gender" disabled value="" name="gender">\
+                                            <option>Male</option>\
+                                            <option>Female</option>\
+                                        </select>\
+                                    </div>\
                                 </div>\
                                 <div class="form-group">\
                                     <label class="control-label" for="address">Address:</label>\
@@ -109,8 +114,8 @@ function loadStudent() {
                                     <label for="status" class="control-label">Status:</label>\
                                     <div class="">\
                                         <select class="form-control" disabled id="status" value="' + data[i]["status"] + '" name="status">\
-                                        <option>active</option>\
-                                        <option>inactive</option>\
+                                        <option>Active</option>\
+                                        <option>Inactive</option>\
                                         </select>\
                                     </div>\
                                 </div>\
@@ -133,6 +138,9 @@ function loadStudent() {
                                     data-modal-id="sdt" type="Button" value="Generate Student Card">\
                                     <a class="btn btn-primary" href="/testrecord/' + data[i]["id"] + '">Test Record</a>\
                                     <a class="btn btn-primary" href="/feerecord/' + data[i]["id"] + '">Fee Record</a>\
+                                    {% if g.role == "root" and inactive == True %}\
+                                    <button type="button" class="btn btn-danger deleteStudentBtn" data-toggle="modal" data-target="#studentRemovalConfimationModal">Delete Student</button>\
+                                    {% endif %}\
                                 </div>\
                             </div>\
                         </form>\
@@ -140,9 +148,38 @@ function loadStudent() {
                     </div>\
                 </div>';
                 $("#studentInfoPanelContainer").append(studentInfoPanel)
+
+                var confirmationModal = '\
+                <div class="modal fade" id="studentRemovalConfimationModal" role="dialog">\
+                    <div class="modal-dialog">\
+                        <div class="modal-content">\
+                        <div class="modal-header">\
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>\
+                        </div>\
+                        <div class="modal-body">\
+                            <div class="alert alert-dismissible alert-danger">\
+                                <p>Are you sure you want to permanently delete <strong>' + data[i]["firstname"] + ' ' + data[i]["lastname"] + '</strong>? All the related data like test and fee records will be deleted as well.</p>\
+                            </div>\
+                        </div>\
+                        <div class="modal-footer">\
+                            <button type="button" class="btn btn-default" data-modal-id="studentRemovalConfimationModal" data-dismiss="modal">Cancel</button>\
+                            <a class="btn btn-danger" href="/deletestudent/' + data[i]["id"] + '">Confirm Delete</a>\
+                        </div>\
+                        </div>\
+                    </div>\
+                </div>';
+                $("body").append(confirmationModal);
+
+                var genderOptions = $("#gender > option");
+                genderOptions.each(function () {
+                    var self = $(this); 
+                    if (self.text() == data[i]["gender"]) {
+                        self.attr("selected", "");
+                    }
+                });
                 
-                var roleOptions = $("#status > option");
-                roleOptions.each(function () {
+                var enrollmentOptions = $("#status > option");
+                enrollmentOptions.each(function () {
                     var self = $(this); 
                     if (self.text() == data[i]["status"]) {
                         self.attr("selected", "");
@@ -201,7 +238,7 @@ function saveStudentInfo(form) {
             <strong>' + data[0]["msg"] + '</strong>\
             </div>');
             setTimeout(function() {
-                loadStudent();
+                window.location.reload(true);
             }, 800);
         }
     }).fail(function(data){
@@ -248,7 +285,8 @@ function generateIDcard(callee) {
         doc.addImage(img, "JPEG", 2.28, 0.96, 0.9, 0.9);
         logoAdded = true;
         };
-        img.src = url;
+        var timeStamp = Math.floor(Date.now() / 1000);
+        img.src = url + "?v=" + timeStamp;
     }
     var id = callee.attr("data-sdt-id");
     var name = callee.attr("data-sdt-name");
@@ -268,6 +306,7 @@ function generateIDcard(callee) {
     
     doc.setFillColor(253, 253, 253)
     doc.setFillColor(24, 79, 130)
+    // doc.setFillColor(125, 125, 125)
     doc.rect(3.3, 0, 0.2, 2, 'F')
 
     doc.setTextColor(253, 253, 253)
@@ -288,6 +327,7 @@ function generateIDcard(callee) {
 
     doc.setFontType('normal');
     doc.setTextColor(43, 105, 159)
+    // doc.setTextColor(45, 45, 45)
     doc.setFontSize(10);
     doc.text(0.15, 0.25, 'Student ID: ' + id);
     doc.text(0.15, 0.45, 'Name: ' + name);

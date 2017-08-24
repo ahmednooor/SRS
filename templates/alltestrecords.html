@@ -19,13 +19,14 @@
 <section class="container">
     <div class="row">
         <div class="col-md-12">
-            <div class="record-table-container panel panel-default">
-                <table class="table table-bordered table-striped" id="studentsTable" style="background:white;">
+            <div class="record-table-container table-responsive">
+                <table class="table table-bordered table-striped" id="testRecordsTable" style="background:white;">
                     <thead>
                         <tr class="success">
                             <th class="text-right">Rd. ID</th>
                             <th class="text-right">St. ID</th>
                             <th class="">Student Name</th>
+                            <th class="">Father Name</th>
                             <th class="">Date</th>
                             <th class="">Class</th>
                             <th class="">Subject</th>
@@ -34,6 +35,9 @@
                             <th class="">Obtained Marks</th>
                             <th class="">Percentage</th>
                             <th class="">Remarks</th>
+                            {% if g.role == "root" %}
+                            <th class=""><i class="fa fa-cog" aria-hidden="true"></i></th>
+                            {% endif %}
                         </tr>
                     </thead>
                     <tbody>
@@ -41,15 +45,19 @@
                         <tr class="">
                             <td class="text-right">{{ record["id"] }}</td>
                             <td class="text-right">{{ record["studentID"] }}</td>
-                            <td class=""><a href="/studentprofile/{{ record['studentID'] }}" class="text-primary">{{ record["studentNAME"] }}</a></td>
+                            <td class=""><a href="/studentprofile/{{ record['studentID'] }}" class="text-primary">{{ record["studentName"] }}</a></td>
+                            <td class="">{{ record["studentFrName"] }}</td>
                             <td class="">{{ record["date"] }}</td>
                             <td class="">{{ record["class"] }}</td>
                             <td class="">{{ record["subject"] }}</td>
                             <td class="">{{ record["description"] }}</td>
                             <td class="">{{ record["totalmarks"] }}</td>
                             <td class="">{{ record["obtainedmarks"] }}</td>
-                            <td class="">{{ record["obtainedpercentage"] }}</td>
+                            <td class="">{{ record["obtainedpercentage"] }}%</td>
                             <td class="">{{ record["remarks"] }}</td>
+                            {% if g.role == "root" %}
+                            <td class=""><a href="/edittestrecord/{{ record['id'] }}" class="btn btn-primary btn-xs" title="Edit"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a></td>
+                            {% endif %}
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -61,6 +69,11 @@
 
 <script>
 $(document).ready(function () {
+$('#testRecordsTable').DataTable({
+    paging: true,
+    searching: true,
+    info: true
+});
 if (window.innerWidth < 760){
     $(".record-table-container").addClass("table-responsive");
     $(".record-table-container").css("min-height", "220px;");

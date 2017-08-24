@@ -7,10 +7,9 @@
 body {
     padding-top: 80px;
     padding-bottom: 80px;
-    /*font-family: sans-serif;*/
+    font-family: "LatoLatinWeb", sans-serif;
     width: 100%;
     overflow-x: hidden;
-    /*background-color: whitesmoke;*/
     background-color: #eeefff;
     /*background-image: url("../img/system/logo.png");*/
     background-repeat: no-repeat;
@@ -26,6 +25,21 @@ body.modal-open-c {
     overflow: hidden !important;
 }
 
+.nav-logo-container {
+    background: #eeefff; 
+    height: 60px;
+    padding: 4px;
+    float: left;
+}
+.nav-logo-img {
+    max-width: 100%;
+    max-height: 100%;
+}
+.nav-brand-name {
+    margin-left: 0 !important;
+    padding: 20px 16px !important;
+}
+
 .home-sections, .db-item-sections {
     padding: 15px 0;
 }
@@ -39,9 +53,14 @@ input[disabled], select[disabled], textarea[disabled] {
     cursor: default !important;
 }
 
-input[type="file"] {
-    /*background: transparent;
-    border: 0;*/
+.nav-icon {
+    width: 30px;
+}
+
+.login-logo {
+     width: 180px;
+     display: block; 
+     margin: auto; 
 }
 
 .profile-img-container {
@@ -76,4 +95,13 @@ ul.breadcrumb {
 .c-p {
     padding-right: 6px;
     padding-left: 6px;
+}
+
+
+@media only screen and (max-width : 480px) {
+    .nav-brand-name {
+        font-size: 14px; 
+        padding: 20px 16px !important;
+        padding-top: 23px !important;
+    }
 }

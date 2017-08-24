@@ -1,0 +1,206 @@
+{% extends "layout.html" %}
+
+{% block title %}System Settings{% endblock %}
+
+{% block main %}
+
+<section class="container">
+    <div class="row" id="adminListContainer">
+    </div>
+</section>
+
+<section class="container">
+    <div class="row">
+        <div class="col-xs-12">
+            <ul class="breadcrumb">
+            <li><a class="text-primary" href="/home">Home</a></li>
+            <li class="active">System Settings</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<div class="container">
+    <div class="row">
+        <div class="col-sm-12">
+            <section id="adminModalsContainer">
+            </section>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function () {
+var adminListContainer = $("#adminListContainer");
+var allAdminsLoaded = false;
+var adminInfoEditable = false;
+var adminsLoadedCounter = 0;
+loadSettings();
+
+function loadSettings() {
+    $.get('/getsystemsettings', {
+    })
+    .done(function (data) {
+        if (data.length == 0) {
+            console.log("No more data left.");
+            allAdminsLoaded = true;
+        } else {
+            adminsLoadedCounter++;
+            var v = adminsLoadedCounter;
+            $("#adminListContainer").html("");
+            $("#adminModalsContainer").html("");
+            var dataLen = data.length;
+            for (var i = 0; i < dataLen; i++) {
+
+                var adminListItemModal = '\
+                <div class="panel panel-primary" data-admin-id="adm' + data[i]["id"] + '" id="adm' + data[i]["id"] + '">\
+                        <div class="panel-heading">\
+                            <h4 class="modal-title lead"><strong>System Settings</strong></h4>\
+                            <!-- <h4 class="badge"> Role : </h4> -->\
+                        </div>\
+                        <div class="panel-body">\
+                            <form class="admin-info-form" method="POST" action="/savesystemsettings" enctype=multipart/form-data>\
+                                <div class="col-md-3 col-sm-4 col-xs-6">\
+                                    <img class="img-responsive img-thumbnail" src="' + data[i]["pngURL"] + '?n=' + v + '" alt="">\
+                                    <br>\
+                                    <br>\
+                                </div>\
+                                <div class="col-md-9 col-sm-8 col-xs-12">\
+                                    <div class="form-group">\
+                                        <label class="control-label" for="adm' + data[i]["id"] + 'institutionname">Institution Name:</label>\
+                                        <input class="form-control" disabled id="adm' + data[i]["id"] + 'institutionname" type="text" value="' + data[i]["institutionname"] + '" name="institutionname">\
+                                    </div>\
+                                    <div class="form-group">\
+                                        <label for="nameinheader" class="control-label">Display Institution Name in Header:</label>\
+                                        <div class="">\
+                                            <select class="form-control" disabled id="nameinheader" value="" name="nameinheader">\
+                                            <option>true</option>\
+                                            <option>false</option>\
+                                            </select>\
+                                        </div>\
+                                    </div>\
+                                    <div class="form-group">\
+                                        <label for="logoinheader" class="control-label">Display Logo in Header:</label>\
+                                        <div class="">\
+                                            <select class="form-control" disabled id="logoinheader" value="" name="logoinheader">\
+                                            <option>true</option>\
+                                            <option>false</option>\
+                                            </select>\
+                                        </div>\
+                                    </div>\
+                                    <div class="form-group">\
+                                        <label class="control-label" for="adm' + data[i]["id"] + 'pngURL">Logo File (.png):</label>\
+                                        <input class="form-control" disabled id="adm' + data[i]["id"] + 'pngURL" type="file" name="pngURL">\
+                                    </div>\
+                                    <div class="form-group">\
+                                        <label class="control-label" for="adm' + data[i]["id"] + 'jpgURL">Logo File (.jpg):</label>\
+                                        <input class="form-control" disabled id="adm' + data[i]["id"] + 'jpgURL" type="file" name="jpgURL">\
+                                    </div>\
+                                    <div class="form-group">\
+                                        <label class="control-label" for="adm' + data[i]["id"] + 'icoURL">Logo File (.ico):</label>\
+                                        <input class="form-control" disabled id="adm' + data[i]["id"] + 'icoURL" type="file" name="icoURL">\
+                                    </div>\
+                                    <div class="form-group" id="requeststatus">\
+                                    </div>\
+                                    <br>\
+                                    <div class="form-group">\
+                                        <button type="button" data-adminInfoEditable="false" data-modal-id="adm' + data[i]["id"] + '" class="btn btn-default editAdminInfo">Edit</button>\
+                                        <input class="btn btn-warning hidden saveEditedInfo" data-modal-id="adm' + data[i]["id"] + '" type="Button" value="Save">\
+                                    </div>\
+                                </div>\
+                            </form>\
+                            <div class="clearfix"></div>\
+                        </div>\
+                </div>';
+                $("#adminModalsContainer").append(adminListItemModal);
+
+                var roleOptionsnameinheader = $("#nameinheader > option");
+                roleOptionsnameinheader.each(function () {
+                    var self = $(this); 
+                    if (self.text() == data[i]["nameinheader"]) {
+                        self.attr("selected", "");
+                    }
+                });
+
+                var roleOptionslogoinheader = $("#logoinheader > option");
+                roleOptionslogoinheader.each(function () {
+                    var self = $(this); 
+                    if (self.text() == data[i]["logoinheader"]) {
+                        self.attr("selected", "");
+                    }
+                });
+
+            }
+
+            $('button.editAdminInfo').on("click", function() {
+                toggleAdminInfoEditable($(this).attr("data-modal-id"), $(this));
+            });
+
+            $('input.saveEditedInfo').on("click", function() {
+                var infoModal = $("#" + $(this).attr("data-modal-id"));
+                var formToSend = infoModal.find("form.admin-info-form")[0];
+                var id = infoModal.attr("data-admin-id");
+                saveSystemSettings(formToSend, id);
+            })
+        }
+    })
+    .fail(function () {
+        console.log("ERROR: Couldn't load data from server.");
+    });
+}
+
+function saveSystemSettings(form, modalId) {
+    var form_data = new FormData(form);
+    form_data.append("id", modalId);
+
+    $("#requeststatus").html('<i class="fa fa-circle-o-notch fa-spin" aria-hidden="true"></i>');
+
+    $.ajax({
+        type: 'POST',
+        url: '/savesystemsettings',
+        data: form_data,
+        contentType: false,
+        processData: false,
+        dataType: 'json'
+    }).done(function(data, textStatus, jqXHR){
+        console.log(data);
+        console.log(textStatus);
+        console.log(jqXHR);
+        console.log('Success!');
+        if (data[0]["status"] == "error") {
+            $("#requeststatus").html('<div class="alert alert-dismissible alert-danger">\
+            <button type="button" class="close" data-dismiss="alert">&times;</button>\
+            <strong>' + data[0]["msg"] + '</strong>\
+            </div>');
+        } else if (data[0]["status"] == "success") {
+            $("#requeststatus").html('<div class="alert alert-dismissible alert-success">\
+            <button type="button" class="close" data-dismiss="alert">&times;</button>\
+            <strong>' + data[0]["msg"] + '</strong>\
+            </div>');
+            setTimeout(function() {
+                window.location.reload(true);
+                // loadSettings("adm" + modalId);
+            }, 800);
+        }
+    }).fail(function(data){
+        console.log("ERROR:");
+    });
+}
+
+function toggleAdminInfoEditable(id, callee) {
+    if (callee.attr("data-adminInfoEditable") == "false") {
+        $("#" + id + " form.admin-info-form .form-control").removeAttr("disabled");
+        $("#" + id + " form.admin-info-form .saveEditedInfo").removeClass("hidden");
+        callee.text("Cancel");
+        callee.attr("data-adminInfoEditable", "true");
+    } else if (callee.attr("data-adminInfoEditable") == "true") {
+        $("#" + id + " form.admin-info-form .form-control").attr("disabled", "true");
+        $("#" + id + " form.admin-info-form .saveEditedInfo").addClass("hidden");
+        callee.text("Edit");
+        callee.attr("data-adminInfoEditable", "false");
+    }
+}
+
+});
+</script>
+{% endblock %}

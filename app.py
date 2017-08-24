@@ -1,6 +1,6 @@
 '''
     App: Student Record System
-    Stack: Python(Flask), SQLite, HTML, CSS, Javascript(JQuery)
+    Stack: Python(Flask), SQLite, HTML, CSS(Bootstrap), Javascript(JQuery)
     Author: Ahmed Noor
 '''
 
@@ -15,6 +15,7 @@ import uuid
 from werkzeug import secure_filename
 import os
 
+### CS50 wrapper for SQLAlchemy
 class SQL(object):
     """Wrap SQLAlchemy to provide a simple SQL API."""
 
@@ -73,7 +74,7 @@ Compress(app)
 
 app.secret_key = uuid.uuid4().hex
 
-app.config['ALLOWED_EXTENSIONS'] = set(['png', 'PNG', 'jpg', 'JPG', 'jpeg', 'JPEG'])
+app.config['ALLOWED_EXTENSIONS'] = set(['png', 'PNG', 'jpg', 'JPG', 'jpeg', 'JPEG', 'ico', 'ICO'])
 
 ### File type confirmation
 def allowed_file(filename):
@@ -93,6 +94,7 @@ def RepresentsInt(s):
 THIS_FOLDER_G = os.path.dirname(os.path.abspath(__file__))
 db = SQL("sqlite:///" + THIS_FOLDER_G + "/db/system.db")
 
+
 ### Disable cache
 @app.after_request
 def add_header(r):
@@ -109,6 +111,15 @@ def add_header(r):
 ### Store current session to global variable "g"
 @app.before_request
 def before_request():
+    g.systemsettings = {}
+    systemsettings = db.execute("SELECT * FROM systemsettings WHERE id=:id", id=1)
+    g.systemsettings["institutionname"] = systemsettings[0]["institutionname"]
+    g.systemsettings["icoURL"] = systemsettings[0]["icoURL"]
+    g.systemsettings["pngURL"] = systemsettings[0]["pngURL"]
+    g.systemsettings["jpgURL"] = systemsettings[0]["jpgURL"]
+    g.systemsettings["nameinheader"] = systemsettings[0]["nameinheader"]
+    g.systemsettings["logoinheader"] = systemsettings[0]["logoinheader"]
+
     g.user = None
     g.firstname = None
     g.lastname = None
@@ -135,7 +146,7 @@ def index():
 @app.route("/home")
 def home():
     if g.user:
-        numofstudents = len(db.execute("SELECT * FROM students WHERE status=:status", status="active"))
+        numofstudents = len(db.execute("SELECT * FROM students WHERE status=:status", status="Active"))
         numofadmins = len(db.execute("SELECT * FROM admins"))
         return render_template("home.html", numofstudents=numofstudents, numofadmins=(numofadmins - 1))
     else:
@@ -236,7 +247,12 @@ def saveadmininfo():
                     imagename = image.filename
                     imageext = imagename.split(".")[-1]
                     imagename = "admin_" + str(id) + "." + imageext
+                    imgExt = db.execute("SELECT * FROM admins WHERE id=:id", id=int(id))
+                    imgExt = imgExt[0]["imgURL"]
+                    imgExt = imgExt.split(".")
+                    imgExt = imgExt[-1]
                     THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
+                    os.remove(os.path.join(THIS_FOLDER + "/static/img/db/admins/", "admin_" + id + "." + imgExt))
                     image.save(os.path.join(THIS_FOLDER + "/static/img/db/admins/", imagename))
                     imgURL = "../static/img/db/admins/" + imagename
                     db.execute("UPDATE admins SET imgURL=:imgURL WHERE id=:id", imgURL=imgURL, id=int(id))
@@ -314,6 +330,11 @@ def deleteadmin():
                 if admins[i]["id"] == int(id):
                     firstname = admins[i]["firstname"]
                     lastname = admins[i]["lastname"]
+                    imgExt = admins[i]["imgURL"]
+                    imgExt = imgExt.split(".")
+                    imgExt = imgExt[-1]
+                    THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
+                    os.remove(os.path.join(THIS_FOLDER + "/static/img/db/admins/", "admin_" + id + "." + imgExt))
                     db.execute("DELETE FROM admins WHERE id=:id", id=int(id))
                     return jsonify([{"status": "success", "msg": "Deleted", "firstname": firstname, "lastname": lastname}])
     else:
@@ -405,7 +426,7 @@ def saveuserprofile():
 @app.route("/students")
 def students():
     if g.user:
-        students = db.execute("SELECT * FROM students WHERE status=:status", status="active")
+        students = db.execute("SELECT * FROM students WHERE status=:status", status="Active")
         students = sorted(students, key=lambda k: str.lower(k["firstname"]))
         return render_template("students.html", students=students)
     else:
@@ -415,7 +436,7 @@ def students():
 @app.route("/students/inactive")
 def inactivestudents():
     if g.user:
-        students = db.execute("SELECT * FROM students WHERE status=:status", status="inactive")
+        students = db.execute("SELECT * FROM students WHERE status=:status", status="Inactive")
         students = sorted(students, key=lambda k: str.lower(k["firstname"]))
         return render_template("students.html", students=students, inactive=True)
     else:
@@ -427,12 +448,12 @@ def studentprofile(id):
     if g.user:
         student = db.execute("SELECT * FROM students WHERE id=:id", id=int(id))
         if len(student) > 0:
-            if student[0]["status"] == "inactive":
+            if student[0]["status"] == "Inactive":
                 return render_template("studentprofile.html", student=student[0], inactive=True)
             else:
                 return render_template("studentprofile.html", student=student[0])
         else:
-            return redirect(url_for("students"))
+            return render_template("notfound.html", msg="Student Not Found.")
     else:
         return redirect(url_for("home"))
 
@@ -444,7 +465,7 @@ def getstudentprofile(id):
         if len(student) > 0:
             return jsonify(student)
         else:
-            return redirect(url_for("students"))
+            return render_template("notfound.html", msg="Student Not Found.")
     else:
         return redirect(url_for("home"))
 
@@ -475,7 +496,7 @@ def savestudentinfo(id):
             if len(student) < 1:
                 return jsonify([{"status": "error", "msg": "Student does not exist."}])
 
-            if status != "active" and status != "inactive":
+            if status != "Active" and status != "Inactive":
                 return jsonify([{"status": "error", "msg": "Invalid status."}])
 
             if image:
@@ -483,7 +504,12 @@ def savestudentinfo(id):
                     imagename = image.filename
                     imageext = imagename.split(".")[-1]
                     imagename = "student_" + str(id) + "." + imageext
+                    imgExt = db.execute("SELECT * FROM students WHERE id=:id", id=int(id))
+                    imgExt = imgExt[0]["imgURL"]
+                    imgExt = imgExt.split(".")
+                    imgExt = imgExt[-1]
                     THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
+                    os.remove(os.path.join(THIS_FOLDER + "/static/img/db/students/", "student_" + id + "." + imgExt))
                     image.save(os.path.join(THIS_FOLDER + "/static/img/db/students/", imagename))
                     imgURL = "../static/img/db/students/" + imagename
                     db.execute("UPDATE students SET imgURL=:imgURL WHERE id=:id", imgURL=imgURL, id=int(id))
@@ -562,6 +588,21 @@ def addnewstudent():
     else:
         return redirect(url_for("home"))
 
+### Delete student based on student ID
+@app.route("/deletestudent/<id>", methods=["GET", "POST"])
+def deletestudent(id):
+    id = id
+    students = db.execute("SELECT * FROM students WHERE id=:id", id=int(id))
+    imgExt = students[0]["imgURL"]
+    imgExt = imgExt.split(".")
+    imgExt = imgExt[-1]
+    THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
+    os.remove(os.path.join(THIS_FOLDER + "/static/img/db/students/", "student_" + id + "." + imgExt))
+    db.execute("DELETE FROM students WHERE id=:id", id=int(id))
+    db.execute("DELETE FROM testrecords WHERE studentID=:studentID", studentID=int(id))
+    db.execute("DELETE FROM feerecords WHERE studentID=:studentID", studentID=int(id))
+    return redirect(url_for("students"))
+
 
 '''
     Test Records
@@ -580,10 +621,6 @@ def testrecords():
 def alltestrecords():
     if g.user:
         records = db.execute("SELECT * FROM testrecords")
-        for record in records:
-            id = int(record["studentID"])
-            student = db.execute("SELECT * from STUDENTS WHERE id=:id", id=id)
-            record["studentNAME"] = student[0]["firstname"] + " " + student[0]["lastname"]
         records.reverse()
         return render_template("alltestrecords.html", records=records)
     else:
@@ -594,12 +631,11 @@ def alltestrecords():
 def fetchtestrecord(id):
     if g.user:
         records = db.execute("SELECT * FROM testrecords WHERE studentID=:id", id=int(id))
-        student = db.execute("SELECT * FROM students WHERE id=:id", id=int(id))
-        if len(student) < 1:
-            return "Student Does Not EXIST!"
+        if len(records) < 1:
+            return render_template("notfound.html", msg="Record Not Found.")
         else:
             records.reverse()
-            return render_template("studenttestrecord.html", records=records, studentName=student[0]["firstname"] + " " + student[0]["lastname"], studentID = str(student[0]["id"]))
+            return render_template("studenttestrecord.html", records=records)
     else:
         return redirect(url_for("home"))
 
@@ -626,14 +662,13 @@ def addnewtestrecord():
         if request.method == "POST":
             studentID = request.values.get("studentID")
             date = request.values.get("date")
-            class_ = request.values.get("class")
             subject = request.values.get("subject")
             description = request.values.get("description")
             totalmarks = request.values.get("totalmarks")
             obtainedmarks = request.values.get("obtainedmarks")
             remarks = request.values.get("remarks")
 
-            if studentID == "" or date == "" or class_ == "" or subject == "" or totalmarks == "" or obtainedmarks == "":
+            if studentID == "" or date == "" or subject == "" or totalmarks == "" or obtainedmarks == "":
                 return jsonify([{"status": "error", "msg": "Incomplete data."}])
             elif RepresentsInt(studentID) != True or RepresentsInt(totalmarks) != True or RepresentsInt(obtainedmarks) != True:
                 return jsonify([{"status": "error", "msg": "Incompatible data."}])
@@ -643,10 +678,72 @@ def addnewtestrecord():
                 return jsonify([{"status": "error", "msg": "No Student with entered ID."}])
 
 
-            db.execute("INSERT INTO testrecords (studentID, date, class, subject, description, totalmarks, obtainedmarks, obtainedpercentage, remarks) VALUES (:studentID, :date, :class_, :subject, :description, :totalmarks, :obtainedmarks, :obtainedpercentage, :remarks)", studentID=int(studentID), date=date, class_=class_, subject=subject, description=description, totalmarks=int(totalmarks), obtainedmarks=int(obtainedmarks), obtainedpercentage=int(int(obtainedmarks)/int(totalmarks)*100), remarks=remarks)
+            db.execute("INSERT INTO testrecords (studentID, studentName, studentFrName, date, class, subject, description, totalmarks, obtainedmarks, obtainedpercentage, remarks) VALUES (:studentID, :studentName, :studentFrName, :date, :class_, :subject, :description, :totalmarks, :obtainedmarks, :obtainedpercentage, :remarks)", studentID=int(student[0]["id"]), studentName=str(student[0]["firstname"] + " " + student[0]["lastname"]), studentFrName=student[0]["fathername"], date=date, class_=student[0]["class"], subject=subject, description=description, totalmarks=int(totalmarks), obtainedmarks=int(obtainedmarks), obtainedpercentage=int(int(obtainedmarks)/int(totalmarks)*100), remarks=remarks)
             return jsonify([{"status": "success", "msg": "Changes saved."}])
     else:
         return redirect(url_for("home"))
+
+### Edit test record
+@app.route("/edittestrecord/<id>")
+def edittestrecord(id):
+    if g.user and g.role == "root":
+        id = id
+        record = db.execute("SELECT * FROM testrecords WHERE id=:id", id=int(id))
+        if len(record) < 1:
+            return render_template("notfound.html", msg="Record Not Found.")
+        else:
+            return render_template("edittestrecord.html", i=1, record=record[0])
+    else:
+        return redirect(url_for("home"))
+
+### Update test record via ajax
+@app.route("/updatetestrecord/<id>", methods=["POST"])
+def updatetestrecord(id):
+    if g.user and g.role == "root":
+        if request.method == "POST":
+            id = id
+            studentID = request.values.get("studentID")
+            studentName = request.values.get("studentName")
+            studentFrName = request.values.get("studentFrName")
+            date = request.values.get("date")
+            class_ = request.values.get("class")
+            subject = request.values.get("subject")
+            description = request.values.get("description")
+            totalmarks = request.values.get("totalmarks")
+            obtainedmarks = request.values.get("obtainedmarks")
+            remarks = request.values.get("remarks")
+
+            if studentID == "" or studentName == "" or studentFrName == "" or date == "" or class_ == "" or subject == "" or totalmarks == "" or obtainedmarks == "":
+                return jsonify([{"status": "error", "msg": "Incomplete data."}])
+            elif RepresentsInt(studentID) != True or RepresentsInt(totalmarks) != True or RepresentsInt(obtainedmarks) != True:
+                return jsonify([{"status": "error", "msg": "Incompatible data."}])
+
+            student = db.execute("SELECT * FROM students WHERE id=:id", id=int(studentID))
+            if len(student) < 1:
+                return jsonify([{"status": "error", "msg": "No Student with entered ID."}])
+
+            db.execute("UPDATE testrecords SET studentID=:studentID WHERE id=:id", studentID=studentID, id=int(id))
+            db.execute("UPDATE testrecords SET studentName=:studentName WHERE id=:id", studentName=studentName, id=int(id))
+            db.execute("UPDATE testrecords SET studentFrName=:studentFrName WHERE id=:id", studentFrName=studentFrName, id=int(id))
+            db.execute("UPDATE testrecords SET date=:date WHERE id=:id", date=date, id=int(id))
+            db.execute("UPDATE testrecords SET class=:class_ WHERE id=:id", class_=class_, id=int(id))
+            db.execute("UPDATE testrecords SET subject=:subject WHERE id=:id", subject=subject, id=int(id))
+            db.execute("UPDATE testrecords SET description=:description WHERE id=:id", description=description, id=int(id))
+            db.execute("UPDATE testrecords SET totalmarks=:totalmarks WHERE id=:id", totalmarks=totalmarks, id=int(id))
+            db.execute("UPDATE testrecords SET obtainedmarks=:obtainedmarks WHERE id=:id", obtainedmarks=obtainedmarks, id=int(id))
+            db.execute("UPDATE testrecords SET obtainedpercentage=:obtainedpercentage WHERE id=:id", obtainedpercentage=int(int(obtainedmarks)/int(totalmarks)*100), id=int(id))
+            db.execute("UPDATE testrecords SET remarks=:remarks WHERE id=:id", remarks=remarks, id=int(id))
+
+            return jsonify([{"status": "success", "msg": "Changes saved."}])
+    else:
+        return redirect(url_for("home"))
+
+### Delete test record based on record ID
+@app.route("/deletetestrecord/<id>", methods=["GET", "POST"])
+def deletetestrecord(id):
+    id = id
+    db.execute("DELETE FROM testrecords WHERE id=:id", id=int(id))
+    return redirect(url_for("testrecords"))
 
 
 '''
@@ -666,10 +763,6 @@ def feerecords():
 def allfeerecords():
     if g.user:
         records = db.execute("SELECT * FROM feerecords")
-        for record in records:
-            id = int(record["studentID"])
-            student = db.execute("SELECT * from STUDENTS WHERE id=:id", id=id)
-            record["studentNAME"] = student[0]["firstname"] + " " + student[0]["lastname"]
         records.reverse()
         return render_template("allfeerecords.html", records=records)
     else:
@@ -680,12 +773,11 @@ def allfeerecords():
 def fetchfeerecord(id):
     if g.user:
         records = db.execute("SELECT * FROM feerecords WHERE studentID=:id", id=int(id))
-        student = db.execute("SELECT * FROM students WHERE id=:id", id=int(id))
-        if len(student) < 1:
-            return "Student Does Not EXIST!"
+        if len(records) < 1:
+            return render_template("notfound.html", msg="Record Not Found.")
         else:
             records.reverse()
-            return render_template("studentfeerecord.html", records=records, studentName=student[0]["firstname"] + " " + student[0]["lastname"], studentID = str(student[0]["id"]))
+            return render_template("studentfeerecord.html", records=records)
     else:
         return redirect(url_for("home"))
 
@@ -712,10 +804,10 @@ def addnewfeerecord():
         if request.method == "POST":
             studentID = request.values.get("studentID")
             date = request.values.get("date")
-            feemonth = request.values.get("feemonth")
+            feefor = request.values.get("feefor")
             depositedfee = request.values.get("depositedfee")
 
-            if studentID == "" or date == "" or feemonth == "" or depositedfee == "":
+            if studentID == "" or date == "" or feefor == "" or depositedfee == "":
                 return jsonify([{"status": "error", "msg": "Incomplete data."}])
             elif RepresentsInt(studentID) != True or RepresentsInt(depositedfee) != True:
                 return jsonify([{"status": "error", "msg": "Incompatible data."}])
@@ -725,7 +817,160 @@ def addnewfeerecord():
                 return jsonify([{"status": "error", "msg": "No Student with entered ID."}])
 
 
-            db.execute("INSERT INTO feerecords (studentID, date, feemonth, depositedfee) VALUES (:studentID, :date, :feemonth, :depositedfee)", studentID=int(studentID), date=date, feemonth=feemonth, depositedfee=int(depositedfee))
+            lastR_ID = db.execute("INSERT INTO feerecords (studentID, studentName, studentFrName, date, feefor, depositedfee) VALUES (:studentID, :studentName, :studentFrName, :date, :feefor, :depositedfee)", studentID=int(student[0]["id"]), studentName=str(student[0]["firstname"] + " " + student[0]["lastname"]), studentFrName=student[0]["fathername"], date=date, feefor=feefor, depositedfee=int(depositedfee))
+            
+            return jsonify([{"status": "success", "msg": "Changes saved.", "lastrowID": lastR_ID}])
+    else:
+        return redirect(url_for("home"))
+
+### Download fee receipt
+@app.route("/downloadfeereceipt/<id>")
+def downloadfeereceipt(id):
+    if g.user:
+        id = id
+        feeRecord = db.execute("SELECT * FROM feerecords WHERE id=:id", id=int(id))
+        if len(feeRecord) < 1:
+            return render_template("notfound.html", msg="Record Not Found.")
+        else:
+            return render_template("downloadfeereceipt.html", msg="Download will start in a moment ...", feeRecord=feeRecord[0])
+    else:
+        return redirect(url_for("home"))
+
+### Edit fee record
+@app.route("/editfeerecord/<id>")
+def editfeerecord(id):
+    if g.user and g.role == "root":
+        id = id
+        record = db.execute("SELECT * FROM feerecords WHERE id=:id", id=int(id))
+        if len(record) < 1:
+            return render_template("notfound.html", msg="Record Not Found.")
+        else:
+            return render_template("editfeerecord.html", i=1, record=record[0])
+    else:
+        return redirect(url_for("home"))
+
+### Update fee record via ajax
+@app.route("/updatefeerecord/<id>", methods=["POST"])
+def updatefeerecord(id):
+    if g.user and g.role == "root":
+        if request.method == "POST":
+            id = id
+            studentID = request.values.get("studentID")
+            studentName = request.values.get("studentName")
+            studentFrName = request.values.get("studentFrName")
+            date = request.values.get("date")
+            feefor = request.values.get("feefor")
+            depositedfee = request.values.get("depositedfee")
+
+            if studentID == "" or studentName == "" or studentFrName == "" or date == "" or feefor == "" or depositedfee == "":
+                return jsonify([{"status": "error", "msg": "Incomplete data."}])
+            elif RepresentsInt(studentID) != True or RepresentsInt(depositedfee) != True:
+                return jsonify([{"status": "error", "msg": "Incompatible data."}])
+
+            student = db.execute("SELECT * FROM students WHERE id=:id", id=int(studentID))
+            if len(student) < 1:
+                return jsonify([{"status": "error", "msg": "No Student with entered ID."}])
+
+            db.execute("UPDATE feerecords SET studentID=:studentID WHERE id=:id", studentID=studentID, id=int(id))
+            db.execute("UPDATE feerecords SET studentName=:studentName WHERE id=:id", studentName=studentName, id=int(id))
+            db.execute("UPDATE feerecords SET studentFrName=:studentFrName WHERE id=:id", studentFrName=studentFrName, id=int(id))
+            db.execute("UPDATE feerecords SET date=:date WHERE id=:id", date=date, id=int(id))
+            db.execute("UPDATE feerecords SET feefor=:feefor WHERE id=:id", feefor=feefor, id=int(id))
+            db.execute("UPDATE feerecords SET depositedfee=:depositedfee WHERE id=:id", depositedfee=depositedfee, id=int(id))
+
+            return jsonify([{"status": "success", "msg": "Changes saved."}])
+    else:
+        return redirect(url_for("home"))
+
+### Delete fee record based on record ID
+@app.route("/deletefeerecord/<id>", methods=["GET", "POST"])
+def deletefeerecord(id):
+    id = id
+    db.execute("DELETE FROM feerecords WHERE id=:id", id=int(id))
+    return redirect(url_for("feerecords"))
+
+
+'''
+    System Settings
+'''
+### System settings page
+@app.route("/systemsettings")
+def systemsettings():
+    if g.user and g.role == "root":
+        return render_template("systemsettings.html")
+    else:
+        return redirect(url_for("home"))
+
+### Get system settings via ajax
+@app.route("/getsystemsettings")
+def getsystemsettings():
+    if g.user and g.role == "root":
+        systemsettings = db.execute("SELECT * FROM systemsettings where id=:id", id=1)
+        return jsonify(systemsettings)
+    else:
+        return redirect(url_for("home"))
+
+### Save system settings changes via ajax
+@app.route("/savesystemsettings", methods=["GET", "POST"])
+def savesystemsettings():
+    if g.user and g.role == "root":
+        if request.method == "POST":
+            id = request.values.get("id")
+            institutionname = request.values.get("institutionname")
+            nameinheader = request.values.get("nameinheader")
+            logoinheader = request.values.get("logoinheader")
+            pngURL = request.files["pngURL"]
+            jpgURL = request.files["jpgURL"]
+            icoURL = request.files["icoURL"]
+
+            print(institutionname, nameinheader, logoinheader)
+
+            if institutionname == "":
+                return jsonify([{"status": "error", "msg": "Institution Name is Mandatory"}])
+            
+            if (nameinheader != "true" and nameinheader != "false") or (logoinheader != "true" and logoinheader != "false"):
+                return jsonify([{"status": "error", "msg": "Incompatible Values for true/false"}])
+
+            if pngURL:
+                if allowed_file(pngURL.filename) == True:
+                    imagename = pngURL.filename
+                    imageext = imagename.split(".")[-1]
+                    imagename = "logo." + imageext
+                    THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
+                    pngURL.save(os.path.join(THIS_FOLDER + "/static/img/system/", imagename))
+                    pngURL = "../static/img/system/" + imagename
+                    db.execute("UPDATE systemsettings SET pngURL=:pngURL WHERE id=:id", pngURL=pngURL, id=1)
+                else:
+                    return jsonify([{"status": "error", "msg": "File extension not supported."}])
+
+            if jpgURL:
+                if allowed_file(jpgURL.filename) == True:
+                    imagename = jpgURL.filename
+                    imageext = imagename.split(".")[-1]
+                    imagename = "logo." + imageext
+                    THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
+                    jpgURL.save(os.path.join(THIS_FOLDER + "/static/img/system/", imagename))
+                    jpgURL = "../static/img/system/" + imagename
+                    db.execute("UPDATE systemsettings SET jpgURL=:jpgURL WHERE id=:id", jpgURL=jpgURL, id=1)
+                else:
+                    return jsonify([{"status": "error", "msg": "File extension not supported."}])
+
+            if icoURL:
+                if allowed_file(icoURL.filename) == True:
+                    imagename = icoURL.filename
+                    imageext = imagename.split(".")[-1]
+                    imagename = "logo." + imageext
+                    THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
+                    icoURL.save(os.path.join(THIS_FOLDER + "/static/img/system/", imagename))
+                    icoURL = "../static/img/system/" + imagename
+                    db.execute("UPDATE systemsettings SET icoURL=:icoURL WHERE id=:id", icoURL=icoURL, id=1)
+                else:
+                    return jsonify([{"status": "error", "msg": "File extension not supported."}])
+
+            db.execute("UPDATE systemsettings SET institutionname=:institutionname WHERE id=:id", institutionname=institutionname, id=1)
+            db.execute("UPDATE systemsettings SET nameinheader=:nameinheader WHERE id=:id", nameinheader=nameinheader, id=1)
+            db.execute("UPDATE systemsettings SET logoinheader=:logoinheader WHERE id=:id", logoinheader=logoinheader, id=1)
+
             return jsonify([{"status": "success", "msg": "Changes saved."}])
     else:
         return redirect(url_for("home"))

@@ -26,6 +26,7 @@
     <div class="row">
         <div class="col-xs-12">
             {% if inactive %}
+            <a href="/students" type="button" class="btn btn-primary">View Active Students</a>
             {% else %}
             <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addNewStudentModal">Add New Student</button>
             <a href="/students/inactive" type="button" class="btn btn-primary">View Inactive Students</a>
@@ -35,6 +36,7 @@
 </div>
 
 {% if inactive %}
+<br>
 {% else %}
 <br>
 {% endif %}
@@ -42,16 +44,16 @@
 <section class="container">
     <div class="row">
         <div class="col-md-12">
-            <div class="student-table-container panel panel-default">
+            <div class="student-table-container">
                 <table class="table table-bordered table-striped" id="studentsTable" style="background:white;">
                     <thead>
                         <tr class="success">
-                            <th class="text-right col-md-1">St. ID</th>
-                            <th class="col-md-1">Image</th>
-                            <th class="col-md-4">Name</th>
-                            <th class="col-md-4">Father Name</th>
-                            <th class="col-md-1">Class</th>
-                            <th class="col-md-1">Action</th>
+                            <th class="text-right">St. ID</th>
+                            <th class="">Image</th>
+                            <th class="">Name</th>
+                            <th class="">Father Name</th>
+                            <th class="">Class</th>
+                            <th class="">Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -60,19 +62,22 @@
                             <td class="text-right col-md-1">{{ student["id"] }}</td>
                             <td class="text-center col-md-1">
                                 <div class="profile-img-container student-profile-img-container">
-                                    <img class="profile-img" src="{{ student['imgURL'] }}" alt="">
+                                    <a href="/studentprofile/{{ student['id'] }}" class="stdImgLink">
+                                        <img class="profile-img" src="{{ student['imgURL'] }}" alt="">
+                                    </a>
                                 </div>
                             </td>
                             <td class="col-md-4"><strong><a href="/studentprofile/{{ student['id'] }}" class="text-primary">{{ student["firstname"] }} {{ student["lastname"] }}</a></strong></td>
                             <td class="col-md-4">{{ student["fathername"] }}</td>
                             <td class="col-md-1">{{ student["class"] }}</td>
                             <td class="col-md-1">
-                                <div class="btn-group">
+                                <div class="btn-group ">
                                 <a href="#" class="btn btn-xs btn-primary dropdown-toggle" data-toggle="dropdown">Actions <span class="caret"></span></a>
-                                <ul class="dropdown-menu">
+                                <ul class="dropdown-menu" style="left:auto; right:0;">
                                     <li><a href="/addstudenttestrecord/{{ student['id'] }}">Add Test</a></li>
-                                    <li><a href="/testrecord/{{ student['id'] }}">Test Record</a></li>
                                     <li><a href="/addstudentfeerecord/{{ student['id'] }}">Deposit Fee</a></li>
+                                    <li class="divider"></li>
+                                    <li><a href="/testrecord/{{ student['id'] }}">Test Record</a></li>
                                     <li><a href="/feerecord/{{ student['id'] }}">Fee Record</a></li>
                                 </ul>
                                 </div>
@@ -124,11 +129,16 @@
                     </div>
                     <div class="form-group">
                         <label class="control-label" for="dob">DOB:</label>
-                        <input class="form-control" id="dob" type="text" value="" name="dob">
+                        <input class="form-control" id="dob" type="date" value="" name="dob">
                     </div>
                     <div class="form-group">
                         <label class="control-label" for="gender">Gender:</label>
-                        <input class="form-control" id="gender" type="text" value="" name="gender">
+                        <div class="">
+                            <select class="form-control" id="gender" value="" name="gender">
+                                <option>Male</option>
+                                <option>Female</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label class="control-label" for="address">Address:</label>
@@ -136,7 +146,7 @@
                     </div>
                     <div class="form-group">
                         <label class="control-label" for="admissiondate">Admission Date:</label>
-                        <input class="form-control" id="admissiondate" type="text" value="" name="admissiondate">
+                        <input class="form-control" id="admissiondate" type="date" value="" name="admissiondate">
                     </div>
                     <div class="form-group">
                         <label class="control-label" for="monthlyfee">Monthly Fee:</label>
@@ -163,9 +173,13 @@
 </div>
 </div>
 
-
 <script>
 $(document).ready(function () {
+$('#studentsTable').DataTable({
+    paging: true,
+    searching: true,
+    info: true
+});
 $("#addNewStudentModal form").on("submit", function(e) {
     e.preventDefault();
     addNewStudent($(this)[0]);
@@ -212,7 +226,7 @@ function addNewStudent(form) {
 
 if (window.innerWidth < 760){
     $(".student-table-container").addClass("table-responsive");
-    $(".student-table-container").css("min-height", "220px;");
+    $("ul.dropdown-menu").css("position", "relative");
 }
 });
 </script>

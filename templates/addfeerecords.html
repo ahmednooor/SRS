@@ -28,7 +28,7 @@
                         <tr class="success">
                             <th class="">St. ID</th>
                             <th class="">Date</th>
-                            <th class="">Fee Month</th>
+                            <th class="">Fee For</th>
                             <th class="">Deposited Fee</th>
                             <th class="text-center">Submit</th>
                         </tr>
@@ -45,10 +45,10 @@
                                 {% endif %}
                             </td>
                             <td class="">
-                                <input class="form-control c-p" name="date" type="text" value="" placeholder="Date">
+                                <input class="form-control c-p" name="date" type="date" value="" placeholder="Date">
                             </td>
                             <td class="">
-                                <input class="form-control c-p" name="feemonth" type="text" value="" placeholder="Fee Month">
+                                <input class="form-control c-p" name="feefor" type="text" value="" placeholder="Fee Month">
                             </td>
                             <td class="">
                                 <input class="form-control c-p" name="depositedfee" type="text" value="" placeholder="Deposited Fee">
@@ -75,7 +75,7 @@ $(".fee-record-form").on("submit", function(e) {
 
 function addNewFeeRecord(form, formID) {
     var form_data = new FormData(form);
-
+    $("#" + formID).parent().find("input[type='Submit']").attr("disabled", "true");
     $.ajax({
         type: 'POST',
         url: '/addnewfeerecord',
@@ -90,16 +90,19 @@ function addNewFeeRecord(form, formID) {
         console.log('Success!');
         if (data[0]["status"] == "error") {
             $("#" + formID).parent().addClass("danger");
+            $("#" + formID).parent().find("input[type='Submit']").removeAttr("disabled");
         } else if (data[0]["status"] == "success") {
             $("#" + formID).parent().removeClass("danger");
             $("#" + formID).parent().find("input[type='Submit']").removeClass("btn-warning");
             $("#" + formID).parent().find("input[type='Submit']").addClass("btn-default");
             $("#" + formID).parent().find("input[type='Submit']").addClass("btn-xs");
             $("#" + formID).parent().find("input[type='Submit']").val("Submitted");
+            $("#" + formID).parent().find("input[type='Submit']").parent().append('<a href="/downloadfeereceipt/' + data[0]["lastrowID"] + '" class="btn btn-primary btn-xs" target="_blank"><i class="fa fa-download" aria-hidden="true"></i></a>');
             $("#" + formID).parent().find("input").attr("disabled", "true");
         }
     }).fail(function(data){
         console.log("ERROR:");
+        $("#" + formID).parent().find("input[type='Submit']").removeAttr("disabled");
     });
 }
 
