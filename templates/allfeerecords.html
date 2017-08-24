@@ -43,7 +43,11 @@
                             <td class="col-md-2">{{ record["date"] }}</td>
                             <td class="">{{ record["feefor"] }}</td>
                             <td class="">{{ record["depositedfee"] }}</td>
-                            <td class=""><a href="/downloadfeereceipt/{{ record['id'] }}" class="btn btn-primary btn-xs" target="_blank" title="Download"><i class="fa fa-download" aria-hidden="true"></i></a>&nbsp;&nbsp;<a href="/editfeerecord/{{ record['id'] }}" class="btn btn-primary btn-xs" title="Edit"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a></td>
+                            <td class=""><a href="/downloadfeereceipt/{{ record['id'] }}" class="btn btn-primary btn-xs" target="_blank" title="Download"><i class="fa fa-download" aria-hidden="true"></i></a>&nbsp;&nbsp;
+                            {% if g.role == "root" %}
+                            <a href="/editfeerecord/{{ record['id'] }}" class="btn btn-primary btn-xs" title="Edit"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
+                            {% endif %}
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
