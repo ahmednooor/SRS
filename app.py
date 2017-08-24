@@ -13,7 +13,7 @@ from passlib.hash import sha256_crypt
 import operator
 import uuid
 from werkzeug import secure_filename
-import os
+import os, sys
 
 ### CS50 wrapper for SQLAlchemy
 class SQL(object):
@@ -91,7 +91,13 @@ def RepresentsInt(s):
 
 
 ### configure CS50 Library to use SQLite database
-THIS_FOLDER_G = os.path.dirname(os.path.abspath(__file__))
+THIS_FOLDER_G = ""
+if getattr(sys, 'frozen', False):
+    # frozen
+    THIS_FOLDER_G = os.path.dirname(sys.executable)
+else:
+    # unfrozen
+    THIS_FOLDER_G = os.path.dirname(os.path.realpath(__file__))
 db = SQL("sqlite:///" + THIS_FOLDER_G + "/db/system.db")
 
 
@@ -251,9 +257,8 @@ def saveadmininfo():
                     imgExt = imgExt[0]["imgURL"]
                     imgExt = imgExt.split(".")
                     imgExt = imgExt[-1]
-                    THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
-                    os.remove(os.path.join(THIS_FOLDER + "/static/img/db/admins/", "admin_" + id + "." + imgExt))
-                    image.save(os.path.join(THIS_FOLDER + "/static/img/db/admins/", imagename))
+                    os.remove(os.path.join(THIS_FOLDER_G + "/static/img/db/admins/", "admin_" + id + "." + imgExt))
+                    image.save(os.path.join(THIS_FOLDER_G + "/static/img/db/admins/", imagename))
                     imgURL = "../static/img/db/admins/" + imagename
                     db.execute("UPDATE admins SET imgURL=:imgURL WHERE id=:id", imgURL=imgURL, id=int(id))
                 else:
@@ -304,8 +309,7 @@ def addnewadmin():
                     imagename = image.filename
                     imageext = imagename.split(".")[-1]
                     imagename = "admin_" + str(newuser[0]["id"]) + "." + imageext
-                    THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
-                    image.save(os.path.join(THIS_FOLDER + "/static/img/db/admins/", imagename))
+                    image.save(os.path.join(THIS_FOLDER_G + "/static/img/db/admins/", imagename))
                     imgURL = "../static/img/db/admins/" + imagename
                     db.execute("UPDATE admins SET imgURL=:imgURL WHERE id=:id", imgURL=imgURL, id=newuser[0]["id"])
                 else:
@@ -333,8 +337,7 @@ def deleteadmin():
                     imgExt = admins[i]["imgURL"]
                     imgExt = imgExt.split(".")
                     imgExt = imgExt[-1]
-                    THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
-                    os.remove(os.path.join(THIS_FOLDER + "/static/img/db/admins/", "admin_" + id + "." + imgExt))
+                    os.remove(os.path.join(THIS_FOLDER_G + "/static/img/db/admins/", "admin_" + id + "." + imgExt))
                     db.execute("DELETE FROM admins WHERE id=:id", id=int(id))
                     return jsonify([{"status": "success", "msg": "Deleted", "firstname": firstname, "lastname": lastname}])
     else:
@@ -394,8 +397,7 @@ def saveuserprofile():
                     imagename = image.filename
                     imageext = imagename.split(".")[-1]
                     imagename = "admin_" + str(id) + "." + imageext
-                    THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
-                    image.save(os.path.join(THIS_FOLDER + "/static/img/db/admins/", imagename))
+                    image.save(os.path.join(THIS_FOLDER_G + "/static/img/db/admins/", imagename))
                     imgURL = "../static/img/db/admins/" + imagename
                     db.execute("UPDATE admins SET imgURL=:imgURL WHERE id=:id", imgURL=imgURL, id=int(id))
                 else:
@@ -508,9 +510,8 @@ def savestudentinfo(id):
                     imgExt = imgExt[0]["imgURL"]
                     imgExt = imgExt.split(".")
                     imgExt = imgExt[-1]
-                    THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
-                    os.remove(os.path.join(THIS_FOLDER + "/static/img/db/students/", "student_" + id + "." + imgExt))
-                    image.save(os.path.join(THIS_FOLDER + "/static/img/db/students/", imagename))
+                    os.remove(os.path.join(THIS_FOLDER_G + "/static/img/db/students/", "student_" + id + "." + imgExt))
+                    image.save(os.path.join(THIS_FOLDER_G + "/static/img/db/students/", imagename))
                     imgURL = "../static/img/db/students/" + imagename
                     db.execute("UPDATE students SET imgURL=:imgURL WHERE id=:id", imgURL=imgURL, id=int(id))
                 else:
@@ -575,8 +576,7 @@ def addnewstudent():
                         imagename = image.filename
                         imageext = imagename.split(".")[-1]
                         imagename = "student_" + str(id) + "." + imageext
-                        THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
-                        image.save(os.path.join(THIS_FOLDER + "/static/img/db/students/", imagename))
+                        image.save(os.path.join(THIS_FOLDER_G + "/static/img/db/students/", imagename))
                         imgURL = "../static/img/db/students/" + imagename
                         db.execute("UPDATE students SET imgURL=:imgURL WHERE id=:id", imgURL=imgURL, id=int(id))
                 else:
@@ -596,8 +596,7 @@ def deletestudent(id):
     imgExt = students[0]["imgURL"]
     imgExt = imgExt.split(".")
     imgExt = imgExt[-1]
-    THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
-    os.remove(os.path.join(THIS_FOLDER + "/static/img/db/students/", "student_" + id + "." + imgExt))
+    os.remove(os.path.join(THIS_FOLDER_G + "/static/img/db/students/", "student_" + id + "." + imgExt))
     db.execute("DELETE FROM students WHERE id=:id", id=int(id))
     db.execute("DELETE FROM testrecords WHERE studentID=:studentID", studentID=int(id))
     db.execute("DELETE FROM feerecords WHERE studentID=:studentID", studentID=int(id))
@@ -936,8 +935,7 @@ def savesystemsettings():
                     imagename = pngURL.filename
                     imageext = imagename.split(".")[-1]
                     imagename = "logo." + imageext
-                    THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
-                    pngURL.save(os.path.join(THIS_FOLDER + "/static/img/system/", imagename))
+                    pngURL.save(os.path.join(THIS_FOLDER_G + "/static/img/system/", imagename))
                     pngURL = "../static/img/system/" + imagename
                     db.execute("UPDATE systemsettings SET pngURL=:pngURL WHERE id=:id", pngURL=pngURL, id=1)
                 else:
@@ -948,8 +946,7 @@ def savesystemsettings():
                     imagename = jpgURL.filename
                     imageext = imagename.split(".")[-1]
                     imagename = "logo." + imageext
-                    THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
-                    jpgURL.save(os.path.join(THIS_FOLDER + "/static/img/system/", imagename))
+                    jpgURL.save(os.path.join(THIS_FOLDER_G + "/static/img/system/", imagename))
                     jpgURL = "../static/img/system/" + imagename
                     db.execute("UPDATE systemsettings SET jpgURL=:jpgURL WHERE id=:id", jpgURL=jpgURL, id=1)
                 else:
@@ -960,8 +957,7 @@ def savesystemsettings():
                     imagename = icoURL.filename
                     imageext = imagename.split(".")[-1]
                     imagename = "logo." + imageext
-                    THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
-                    icoURL.save(os.path.join(THIS_FOLDER + "/static/img/system/", imagename))
+                    icoURL.save(os.path.join(THIS_FOLDER_G + "/static/img/system/", imagename))
                     icoURL = "../static/img/system/" + imagename
                     db.execute("UPDATE systemsettings SET icoURL=:icoURL WHERE id=:id", icoURL=icoURL, id=1)
                 else:
