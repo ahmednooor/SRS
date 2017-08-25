@@ -13,7 +13,7 @@ Tech Stack: Python(Flask), SQLite, HTML, CSS(Bootstrap), Javascript(JQuery).
 * Ability to change institution name and logo from within the app.
 * Create/Delete Administrators from root account.
 * Admin can only 1) create/edit a student, 2) create test and fee records, 3) edit personal profile of itself.
-* Root has all privileges like 1) create/edit/delete student/admins/test records/fee records, 2) edit institution name and logo.
+* Root has all privileges like 1) create/edit/delete students/admins/test records/fee records, 2) edit institution name and logo.
 
 ## Default Username and Password
 > Root User:

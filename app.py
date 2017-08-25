@@ -257,7 +257,10 @@ def saveadmininfo():
                     imgExt = imgExt[0]["imgURL"]
                     imgExt = imgExt.split(".")
                     imgExt = imgExt[-1]
-                    os.remove(os.path.join(THIS_FOLDER_G + "/static/img/db/admins/", "admin_" + id + "." + imgExt))
+                    try:
+                        os.remove(os.path.join(THIS_FOLDER_G + "/static/img/db/admins/", "admin_" + id + "." + imgExt))
+                    except:
+                        pass
                     image.save(os.path.join(THIS_FOLDER_G + "/static/img/db/admins/", imagename))
                     imgURL = "../static/img/db/admins/" + imagename
                     db.execute("UPDATE admins SET imgURL=:imgURL WHERE id=:id", imgURL=imgURL, id=int(id))
@@ -337,7 +340,10 @@ def deleteadmin():
                     imgExt = admins[i]["imgURL"]
                     imgExt = imgExt.split(".")
                     imgExt = imgExt[-1]
-                    os.remove(os.path.join(THIS_FOLDER_G + "/static/img/db/admins/", "admin_" + id + "." + imgExt))
+                    try:
+                        os.remove(os.path.join(THIS_FOLDER_G + "/static/img/db/admins/", "admin_" + id + "." + imgExt))
+                    except:
+                        pass
                     db.execute("DELETE FROM admins WHERE id=:id", id=int(id))
                     return jsonify([{"status": "success", "msg": "Deleted", "firstname": firstname, "lastname": lastname}])
     else:
@@ -397,6 +403,14 @@ def saveuserprofile():
                     imagename = image.filename
                     imageext = imagename.split(".")[-1]
                     imagename = "admin_" + str(id) + "." + imageext
+                    imgExt = db.execute("SELECT * FROM admins WHERE id=:id", id=int(id))
+                    imgExt = imgExt[0]["imgURL"]
+                    imgExt = imgExt.split(".")
+                    imgExt = imgExt[-1]
+                    try:
+                        os.remove(os.path.join(THIS_FOLDER_G + "/static/img/db/admins/", "admin_" + id + "." + imgExt))
+                    except:
+                        pass
                     image.save(os.path.join(THIS_FOLDER_G + "/static/img/db/admins/", imagename))
                     imgURL = "../static/img/db/admins/" + imagename
                     db.execute("UPDATE admins SET imgURL=:imgURL WHERE id=:id", imgURL=imgURL, id=int(id))
@@ -510,7 +524,10 @@ def savestudentinfo(id):
                     imgExt = imgExt[0]["imgURL"]
                     imgExt = imgExt.split(".")
                     imgExt = imgExt[-1]
-                    os.remove(os.path.join(THIS_FOLDER_G + "/static/img/db/students/", "student_" + id + "." + imgExt))
+                    try:
+                        os.remove(os.path.join(THIS_FOLDER_G + "/static/img/db/students/", "student_" + id + "." + imgExt))
+                    except:
+                        pass
                     image.save(os.path.join(THIS_FOLDER_G + "/static/img/db/students/", imagename))
                     imgURL = "../static/img/db/students/" + imagename
                     db.execute("UPDATE students SET imgURL=:imgURL WHERE id=:id", imgURL=imgURL, id=int(id))
@@ -596,7 +613,10 @@ def deletestudent(id):
     imgExt = students[0]["imgURL"]
     imgExt = imgExt.split(".")
     imgExt = imgExt[-1]
-    os.remove(os.path.join(THIS_FOLDER_G + "/static/img/db/students/", "student_" + id + "." + imgExt))
+    try:
+        os.remove(os.path.join(THIS_FOLDER_G + "/static/img/db/students/", "student_" + id + "." + imgExt))
+    except:
+        pass
     db.execute("DELETE FROM students WHERE id=:id", id=int(id))
     db.execute("DELETE FROM testrecords WHERE studentID=:studentID", studentID=int(id))
     db.execute("DELETE FROM feerecords WHERE studentID=:studentID", studentID=int(id))
