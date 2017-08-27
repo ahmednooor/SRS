@@ -2,7 +2,11 @@
 
 > A basic student record system.
 
-Tech Stack: Python(Flask), SQLite, HTML, CSS(Bootstrap), Javascript(JQuery).
+[Screenshots](https://github.com/ahmednooor/SRS/tree/master/screenshots)
+
+![Screenshot](https://raw.githubusercontent.com/ahmednooor/SRS/master/screenshots/1.png)
+
+> Tech Stack: Python(Flask), SQLite, HTML, CSS(Bootstrap), Javascript(JQuery).
 
 ## Features
 * Student's personal record.
