@@ -52,7 +52,7 @@ You can also replace the three default logo files at `/static/img/system/[logo.p
 
 ## Contributions/Issues/Feedback
 > Contributions to this project directly is not recommended. Feel free to fork it and modify according to your needs.
-Feel free too post any issues/feedback in the issues section.
+Feel free to post any issues/feedback in the issues section.
 
 ## Licence and Credits
 

@@ -90,7 +90,7 @@ def RepresentsInt(s):
         return False
 
 
-### configure CS50 Library to use SQLite database
+### configure root directory path relative to this file
 THIS_FOLDER_G = ""
 if getattr(sys, 'frozen', False):
     # frozen
@@ -98,6 +98,8 @@ if getattr(sys, 'frozen', False):
 else:
     # unfrozen
     THIS_FOLDER_G = os.path.dirname(os.path.realpath(__file__))
+
+### configure CS50 Library to use SQLite database
 db = SQL("sqlite:///" + THIS_FOLDER_G + "/db/system.db")
 
 
