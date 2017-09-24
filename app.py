@@ -383,6 +383,7 @@ def saveuserprofile():
             username = request.values.get("username")
             oldpassword = request.values.get("oldpassword")
             password = request.values.get("password")
+            confirmpassword = request.values.get("confirmpassword")
             contact = request.values.get("contact")
             image = request.files["imgURL"]
 
@@ -395,10 +396,13 @@ def saveuserprofile():
             users = db.execute("SELECT * FROM admins WHERE id=:id", id=int(g.user))
 
             if password != "":
+                if password != confirmpassword:
+                    return jsonify([{"status": "error", "msg": "Confirm new password."}])
+
                 if sha256_crypt.verify(oldpassword, users[0]["password"]) == True:
                     db.execute("UPDATE admins SET password=:password WHERE id=:id", password=sha256_crypt.hash(password), id=int(id))
                 else:
-                    return jsonify([{"status": "error", "msg": "Password did not match."}])
+                    return jsonify([{"status": "error", "msg": "Old password did not match."}])
 
             if image:
                 if allowed_file(image.filename) == True:
