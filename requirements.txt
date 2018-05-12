@@ -1,6 +1,8 @@
-cs50==1.3.0
-passlib==1.7.1
-Flask_Compress==1.4.0
 Flask==0.12.1
-Werkzeug==0.12.1
+Flask-Compress==1.4.0
+Flask-Session==0.3.1
+Flask-SQLAlchemy==2.3.2
+cs50==1.3.0
 SQLAlchemy==1.1.9
+passlib==1.7.1
+Werkzeug==0.12.1

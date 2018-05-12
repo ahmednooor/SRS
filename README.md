@@ -35,20 +35,31 @@ pip install -r requirements.txt
 ```
 Type the following command to run the app
 ```sh
-python app.py
+python server.py
 ```
+Or if you want to run the desktop version (windows only),
+> NOTE: You will need to have `pythonnet` and `pywebview` installed first to run the desktop version
+```sh
+pip install pythonnet pywebview
+```
+Then type,
+```sh
+python main.pyw
+```
+> Or just double click `main.pyw`
 
-### Creating an executable for windows using cx_Freeze
-> You will need to have `cx_Freeze` installed first
+### Creating an executable for windows using pyinstaller
+> You will need to have `pyinstaller`, `pythonnet` and `pywebview` installed first
 ```sh
-pip install cx_Freeze
+pip install pyinstaller pythonnet pywebview
 ```
-Type following to generate the executable
-```sh
-python setup.py build
-```
-> NOTE: You can change the `setup.py` file to generate the executable with your own instution's name. Just replace `Institution_Name` with your institution's name.
+1. Replace `<path/to/your/python/installation/directory>` in `make_exec.bat` file with your own python installation directory path.
+> NOTE: You can change the `make_exec.bat` file to generate the executable with your own instution's name. Just replace `Institution_Name` with your institution's name.
 You can also replace the three default logo files at `/static/img/system/[logo.png, logo.jpg, logo.ico]` with your own institution's logo files. 
+
+2. Double click `make_exec.bat` to generate executable. After completion, your executable directory will be in `dist/` directory.
+
+3. Delete `build/` directory and any `.spec` files as they aren't needed anymore.
 
 ## Contributions/Issues/Feedback
 > Contributions to this project directly is not recommended. Feel free to fork it and modify according to your needs.

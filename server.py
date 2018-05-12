@@ -1,19 +1,21 @@
-'''
-    App: Student Record System
-    Stack: Python(Flask), SQLite, HTML, CSS(Bootstrap), Javascript(JQuery)
-    Author: Ahmed Noor
-'''
-
-### Imports
-from flask import Flask, flash, redirect, render_template, request, session, url_for, jsonify, g
+import os, sys
+from flask import (
+    Flask,
+    flash,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
+    jsonify,
+    make_response,
+    g
+)
 from flask_compress import Compress
 import sqlalchemy
-from cs50 import SQL
 from passlib.hash import sha256_crypt
 import operator
 import uuid
-from werkzeug import secure_filename
-import os, sys
 
 ### CS50 wrapper for SQLAlchemy
 class SQL(object):
@@ -69,17 +71,19 @@ class SQL(object):
 
 
 ### configure flask
-app = Flask(__name__)
-Compress(app)
+server = Flask(__name__)
+server.config["SEND_FILE_MAX_AGE_DEFAULT"] = 1  # disable caching
 
-app.secret_key = uuid.uuid4().hex
+Compress(server)
 
-app.config['ALLOWED_EXTENSIONS'] = set(['png', 'PNG', 'jpg', 'JPG', 'jpeg', 'JPEG', 'ico', 'ICO'])
+server.secret_key = uuid.uuid4().hex
+
+server.config['ALLOWED_EXTENSIONS'] = set(['png', 'PNG', 'jpg', 'JPG', 'jpeg', 'JPEG', 'ico', 'ICO'])
 
 ### File type confirmation
 def allowed_file(filename):
     return '.' in filename and \
-           filename.rsplit('.', 1)[1] in app.config['ALLOWED_EXTENSIONS']
+           filename.rsplit('.', 1)[1] in server.config['ALLOWED_EXTENSIONS']
 
 ### Convert string to int type possibility confirmation
 def RepresentsInt(s):
@@ -102,9 +106,8 @@ else:
 ### configure CS50 Library to use SQLite database
 db = SQL("sqlite:///" + THIS_FOLDER_G + "/db/system.db")
 
-
 ### Disable cache
-@app.after_request
+@server.after_request
 def add_header(r):
     """
     Add headers to both force latest IE rendering engine or Chrome Frame,
@@ -117,7 +120,7 @@ def add_header(r):
     return r
 
 ### Store current session to global variable "g"
-@app.before_request
+@server.before_request
 def before_request():
     g.systemsettings = {}
     systemsettings = db.execute("SELECT * FROM systemsettings WHERE id=:id", id=1)
@@ -142,8 +145,13 @@ def before_request():
         g.logged_in = session["logged_in"]
 
 
+### check if app is running
+@server.route("/check_if_app_is_running")
+def check_if_app_is_running():
+    return 'App Is Running ...'
+
 ### Root
-@app.route("/")
+@server.route("/")
 def index():
     if g.user:
         return redirect(url_for("home"))
@@ -151,7 +159,7 @@ def index():
         return redirect(url_for("login"))
 
 ### Home
-@app.route("/home")
+@server.route("/home")
 def home():
     if g.user:
         numofstudents = len(db.execute("SELECT * FROM students WHERE status=:status", status="Active"))
@@ -165,7 +173,7 @@ def home():
     Login/Logout
 '''
 ### Login
-@app.route("/login", methods=["GET", "POST"])
+@server.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "GET":
         return render_template("login.html")
@@ -194,7 +202,7 @@ def login():
             return render_template("login.html", error="Invalid Username or Password.")
 
 ### Logout
-@app.route("/logout")
+@server.route("/logout")
 def logout():
     session.pop("user", None)
     session.pop("username", None)
@@ -209,7 +217,7 @@ def logout():
     Administrators
 '''
 ### Main administrators page
-@app.route("/administrators")
+@server.route("/administrators")
 def administrators():
     if g.user and g.role == "root":
         return render_template("administrators.html")
@@ -217,7 +225,7 @@ def administrators():
         return redirect(url_for("home"))
 
 ### Get admins data via ajax to show on main administrators page
-@app.route("/getadmins", methods=["GET", "POST"])
+@server.route("/getadmins", methods=["GET", "POST"])
 def getadmins():
     if g.user and g.role == "root":
         admins = db.execute("SELECT * FROM admins")
@@ -231,7 +239,7 @@ def getadmins():
         return redirect(url_for("home"))
 
 ### Save admin info via ajax
-@app.route("/saveadmininfo", methods=["GET", "POST"])
+@server.route("/saveadmininfo", methods=["GET", "POST"])
 def saveadmininfo():
     if g.user and g.role == "root":
         if request.method == "POST":
@@ -283,7 +291,7 @@ def saveadmininfo():
         return redirect(url_for("home"))
 
 ### Add admin info via ajax
-@app.route("/addnewadmin", methods=["GET", "POST"])
+@server.route("/addnewadmin", methods=["GET", "POST"])
 def addnewadmin():
     if g.user and g.role == "root":
         if request.method == "POST":
@@ -327,7 +335,7 @@ def addnewadmin():
         return redirect(url_for("home"))
 
 ### Delete admin via ajax
-@app.route("/deleteadmin", methods=["GET", "POST"])
+@server.route("/deleteadmin", methods=["GET", "POST"])
 def deleteadmin():
     if g.user and g.role == "root":
         if request.method == "POST":
@@ -356,7 +364,7 @@ def deleteadmin():
     User profile of the currently logged in user(admin)
 '''
 ### Show currently logged in user's profile
-@app.route("/userprofile", methods=["GET", "POST"])
+@server.route("/userprofile", methods=["GET", "POST"])
 def userprofile():
     if g.user:
         return render_template("userprofile.html")
@@ -364,7 +372,7 @@ def userprofile():
         return redirect(url_for("home"))
 
 ### Get currently logged in user's data via ajax to view on user profile
-@app.route("/getuserprofile", methods=["GET", "POST"])
+@server.route("/getuserprofile", methods=["GET", "POST"])
 def getuserprofile():
     if g.user:
         user = db.execute("SELECT * FROM admins where id=:id", id=int(g.user))
@@ -373,7 +381,7 @@ def getuserprofile():
         return redirect(url_for("home"))
 
 ### Save user profile changes via ajax
-@app.route("/saveuserprofile", methods=["GET", "POST"])
+@server.route("/saveuserprofile", methods=["GET", "POST"])
 def saveuserprofile():
     if g.user:
         if request.method == "POST":
@@ -445,7 +453,7 @@ def saveuserprofile():
     Students
 '''
 ### Main students page. View all currently active students
-@app.route("/students")
+@server.route("/students")
 def students():
     if g.user:
         students = db.execute("SELECT * FROM students WHERE status=:status", status="Active")
@@ -455,7 +463,7 @@ def students():
         return redirect(url_for("home"))
 
 ### Main students page. View all currently inactive students
-@app.route("/students/inactive")
+@server.route("/students/inactive")
 def inactivestudents():
     if g.user:
         students = db.execute("SELECT * FROM students WHERE status=:status", status="Inactive")
@@ -465,7 +473,7 @@ def inactivestudents():
         return redirect(url_for("home"))
 
 ### View th profile of a specific student based on student ID
-@app.route("/studentprofile/<id>")
+@server.route("/studentprofile/<id>")
 def studentprofile(id):
     if g.user:
         student = db.execute("SELECT * FROM students WHERE id=:id", id=int(id))
@@ -480,7 +488,7 @@ def studentprofile(id):
         return redirect(url_for("home"))
 
 ### Get student data via ajax to view on student profile based on student ID
-@app.route("/getstudentprofile/<id>")
+@server.route("/getstudentprofile/<id>")
 def getstudentprofile(id):
     if g.user:
         student = db.execute("SELECT * FROM students WHERE id=:id", id=int(id))
@@ -492,7 +500,7 @@ def getstudentprofile(id):
         return redirect(url_for("home"))
 
 ### Save student data changes via ajax based on student ID
-@app.route("/savestudentinfo/<id>", methods=["GET", "POST"])
+@server.route("/savestudentinfo/<id>", methods=["GET", "POST"])
 def savestudentinfo(id):
     if g.user:
         if request.method == "POST":
@@ -559,7 +567,7 @@ def savestudentinfo(id):
         return redirect(url_for("home"))
 
 ### Add new student via ajax
-@app.route("/addnewstudent", methods=["GET", "POST"])
+@server.route("/addnewstudent", methods=["GET", "POST"])
 def addnewstudent():
     if g.user:
         if request.method == "POST":
@@ -612,7 +620,7 @@ def addnewstudent():
         return redirect(url_for("home"))
 
 ### Delete student based on student ID
-@app.route("/deletestudent/<id>", methods=["GET", "POST"])
+@server.route("/deletestudent/<id>", methods=["GET", "POST"])
 def deletestudent(id):
     id = id
     students = db.execute("SELECT * FROM students WHERE id=:id", id=int(id))
@@ -633,7 +641,7 @@ def deletestudent(id):
     Test Records
 '''
 ### Main test records page
-@app.route("/testrecords")
+@server.route("/testrecords")
 def testrecords():
     if g.user:
         records = db.execute("SELECT * FROM testrecords")
@@ -642,7 +650,7 @@ def testrecords():
         return redirect(url_for("home"))
 
 ### View all test records page
-@app.route("/alltestrecords")
+@server.route("/alltestrecords")
 def alltestrecords():
     if g.user:
         records = db.execute("SELECT * FROM testrecords")
@@ -652,7 +660,7 @@ def alltestrecords():
         return redirect(url_for("home"))
 
 ### View test record of a specific student based on student ID
-@app.route("/testrecord/<id>")
+@server.route("/testrecord/<id>")
 def fetchtestrecord(id):
     if g.user:
         records = db.execute("SELECT * FROM testrecords WHERE studentID=:id", id=int(id))
@@ -665,7 +673,7 @@ def fetchtestrecord(id):
         return redirect(url_for("home"))
 
 ### Add test record of a specific student based on student ID
-@app.route("/addtestrecords/<i>")
+@server.route("/addtestrecords/<i>")
 def addtestrecords(i):
     if g.user:
         return render_template("addtestrecords.html", i=int(i))
@@ -673,7 +681,7 @@ def addtestrecords(i):
         return redirect(url_for("home"))
 
 ### Add new fee record according to student ID page
-@app.route("/addstudenttestrecord/<id>")
+@server.route("/addstudenttestrecord/<id>")
 def addstudenttestrecord(id):
     if g.user:
         return render_template("addtestrecords.html", i=1, id=id)
@@ -681,7 +689,7 @@ def addstudenttestrecord(id):
         return redirect(url_for("home"))
 
 ### Add new test records via ajax
-@app.route("/addnewtestrecord", methods=["POST"])
+@server.route("/addnewtestrecord", methods=["POST"])
 def addnewtestrecord():
     if g.user:
         if request.method == "POST":
@@ -709,7 +717,7 @@ def addnewtestrecord():
         return redirect(url_for("home"))
 
 ### Edit test record
-@app.route("/edittestrecord/<id>")
+@server.route("/edittestrecord/<id>")
 def edittestrecord(id):
     if g.user and g.role == "root":
         id = id
@@ -722,7 +730,7 @@ def edittestrecord(id):
         return redirect(url_for("home"))
 
 ### Update test record via ajax
-@app.route("/updatetestrecord/<id>", methods=["POST"])
+@server.route("/updatetestrecord/<id>", methods=["POST"])
 def updatetestrecord(id):
     if g.user and g.role == "root":
         if request.method == "POST":
@@ -764,7 +772,7 @@ def updatetestrecord(id):
         return redirect(url_for("home"))
 
 ### Delete test record based on record ID
-@app.route("/deletetestrecord/<id>", methods=["GET", "POST"])
+@server.route("/deletetestrecord/<id>", methods=["GET", "POST"])
 def deletetestrecord(id):
     id = id
     db.execute("DELETE FROM testrecords WHERE id=:id", id=int(id))
@@ -775,7 +783,7 @@ def deletetestrecord(id):
     Fee Records
 '''
 ### Main fee records page
-@app.route("/feerecords")
+@server.route("/feerecords")
 def feerecords():
     if g.user:
         records = db.execute("SELECT * FROM feerecords")
@@ -784,7 +792,7 @@ def feerecords():
         return redirect(url_for("home"))
 
 ### View all fee records page
-@app.route("/allfeerecords")
+@server.route("/allfeerecords")
 def allfeerecords():
     if g.user:
         records = db.execute("SELECT * FROM feerecords")
@@ -794,7 +802,7 @@ def allfeerecords():
         return redirect(url_for("home"))
 
 ### View fee record of a specific student based on student ID
-@app.route("/feerecord/<id>")
+@server.route("/feerecord/<id>")
 def fetchfeerecord(id):
     if g.user:
         records = db.execute("SELECT * FROM feerecords WHERE studentID=:id", id=int(id))
@@ -807,7 +815,7 @@ def fetchfeerecord(id):
         return redirect(url_for("home"))
 
 ### Add fee record of a specific student based on student ID
-@app.route("/addfeerecords/<i>")
+@server.route("/addfeerecords/<i>")
 def addfeerecords(i):
     if g.user:
         return render_template("addfeerecords.html", i=int(i))
@@ -815,7 +823,7 @@ def addfeerecords(i):
         return redirect(url_for("home"))
 
 ### Add new fee record according to student ID page
-@app.route("/addstudentfeerecord/<id>")
+@server.route("/addstudentfeerecord/<id>")
 def addstudentfeerecord(id):
     if g.user:
         return render_template("addfeerecords.html", i=1, id=id)
@@ -823,7 +831,7 @@ def addstudentfeerecord(id):
         return redirect(url_for("home"))
 
 ### Add new fee records via ajax
-@app.route("/addnewfeerecord", methods=["POST"])
+@server.route("/addnewfeerecord", methods=["POST"])
 def addnewfeerecord():
     if g.user:
         if request.method == "POST":
@@ -849,7 +857,7 @@ def addnewfeerecord():
         return redirect(url_for("home"))
 
 ### Download fee receipt
-@app.route("/downloadfeereceipt/<id>")
+@server.route("/downloadfeereceipt/<id>")
 def downloadfeereceipt(id):
     if g.user:
         id = id
@@ -862,7 +870,7 @@ def downloadfeereceipt(id):
         return redirect(url_for("home"))
 
 ### Edit fee record
-@app.route("/editfeerecord/<id>")
+@server.route("/editfeerecord/<id>")
 def editfeerecord(id):
     if g.user and g.role == "root":
         id = id
@@ -875,7 +883,7 @@ def editfeerecord(id):
         return redirect(url_for("home"))
 
 ### Update fee record via ajax
-@app.route("/updatefeerecord/<id>", methods=["POST"])
+@server.route("/updatefeerecord/<id>", methods=["POST"])
 def updatefeerecord(id):
     if g.user and g.role == "root":
         if request.method == "POST":
@@ -908,7 +916,7 @@ def updatefeerecord(id):
         return redirect(url_for("home"))
 
 ### Delete fee record based on record ID
-@app.route("/deletefeerecord/<id>", methods=["GET", "POST"])
+@server.route("/deletefeerecord/<id>", methods=["GET", "POST"])
 def deletefeerecord(id):
     id = id
     db.execute("DELETE FROM feerecords WHERE id=:id", id=int(id))
@@ -919,7 +927,7 @@ def deletefeerecord(id):
     System Settings
 '''
 ### System settings page
-@app.route("/systemsettings")
+@server.route("/systemsettings")
 def systemsettings():
     if g.user and g.role == "root":
         return render_template("systemsettings.html")
@@ -927,7 +935,7 @@ def systemsettings():
         return redirect(url_for("home"))
 
 ### Get system settings via ajax
-@app.route("/getsystemsettings")
+@server.route("/getsystemsettings")
 def getsystemsettings():
     if g.user and g.role == "root":
         systemsettings = db.execute("SELECT * FROM systemsettings where id=:id", id=1)
@@ -936,7 +944,7 @@ def getsystemsettings():
         return redirect(url_for("home"))
 
 ### Save system settings changes via ajax
-@app.route("/savesystemsettings", methods=["GET", "POST"])
+@server.route("/savesystemsettings", methods=["GET", "POST"])
 def savesystemsettings():
     if g.user and g.role == "root":
         if request.method == "POST":
@@ -998,6 +1006,10 @@ def savesystemsettings():
         return redirect(url_for("home"))
 
 
-### Run Flask App
+def run_server():
+    server.run(host="127.0.0.1", port=5100, threaded=True)
+    # server.run(debug=True)
+
+
 if __name__ == "__main__":
-      app.run(debug=True)
+    run_server()

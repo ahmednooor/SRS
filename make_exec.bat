@@ -1,0 +1,14 @@
+pyinstaller main.pyw ^
+    --clean ^
+    --windowed --noconsole ^
+    --hidden-import "clr" ^
+    --name "Institution_Name" ^
+    --icon "static/img/system/logo.ico" ^
+    --paths "<path/to/your/python/installation/directory>/" ^
+    --add-data "static;./static/" ^
+    --add-data "templates;./templates/" ^
+    --add-data "db;./db/" ^
+    --add-data "server.py;./" ^
+    --add-data "<path/to/your/python/installation/directory>/Lib/site-packages/webview/lib/WebBrowserInterop.x64.dll;./" ^
+    --add-data "<path/to/your/python/installation/directory>/Lib/site-packages/webview/lib/WebBrowserInterop.x86.dll;./" ^
+    --exclude-module "tkinter"
